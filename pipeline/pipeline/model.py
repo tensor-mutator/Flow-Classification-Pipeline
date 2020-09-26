@@ -8,7 +8,7 @@ with warnings.catch_warnings():
 class Model(metaclass=ABCMeta):
 
       @abstractmethod
-      def __init__(self, x: tf.Tensor, y: tf.Tensor) -> None:
+      def __init__(self, X: tf.Tensor, y: tf.Tensor) -> None:
           ...
 
       @property
@@ -29,8 +29,8 @@ class Model(metaclass=ABCMeta):
 
       @staticmethod
       @abstractmethod
-      def shape_x() -> Tuple:
-          return self._shape_x
+      def shape_X() -> Tuple:
+          return self._shape_X
 
       @staticmethod
       @abstractmethod
