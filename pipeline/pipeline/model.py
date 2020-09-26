@@ -27,12 +27,12 @@ class Model(metaclass=ABCMeta):
       def evaluation_metrics(self) -> List[str]:
           return self._evaluation_metrics
 
-      @property
+      @staticmethod
       @abstractmethod
-      def shape_x(self) -> Tuple:
+      def shape_x() -> Tuple:
           return self._shape_x
 
-      @property
+      @staticmethod
       @abstractmethod
-      def shape_y(self) -> Tuple:
+      def shape_y() -> Any:
           return self._shape_y
