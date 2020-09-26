@@ -29,10 +29,10 @@ class Model(metaclass=ABCMeta):
 
       @property
       @abstractmethod
-      def input_shape(self) -> Tuple:
-          return self._input_shape
+      def shape_x(self) -> Tuple:
+          return self._shape_x
 
       @property
       @abstractmethod
-      def n_classes(self) -> Tuple:
-          return self._n_classes
+      def shape_y(self) -> Tuple:
+          return self._shape_y
