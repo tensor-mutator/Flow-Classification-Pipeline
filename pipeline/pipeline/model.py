@@ -13,13 +13,16 @@ class Model(metaclass=ABCMeta):
 
       @property
       @abstractmethod
-      def loss(self) -> Any:
+      def loss(self) -> str:
           return self._loss
 
       @property
-      @abstractmethod
-      def grad(self) -> Any:
+      def grad(self) -> tf.Tensor:
           return self._grad
+
+      @property
+      def y_hat(self) -> tf.Tensor:
+          return self._y_hat
 
       @property
       @abstractmethod
@@ -29,14 +32,14 @@ class Model(metaclass=ABCMeta):
       @property
       @abstractmethod
       def evaluation_metrics(self) -> List[str]:
-          return self._evaluation_metrics
+          ...
 
       @staticmethod
       @abstractmethod
       def shape_X() -> Tuple:
-          return self._shape_X
+          ...
 
       @staticmethod
       @abstractmethod
       def shape_y() -> Tuple:
-          return self._shape_y
+          ...
