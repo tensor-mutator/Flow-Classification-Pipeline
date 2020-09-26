@@ -12,18 +12,22 @@ class Model(metaclass=ABCMeta):
           ...
 
       @property
+      @abstractmethod
       def loss(self) -> Any:
           return self._loss
 
       @property
+      @abstractmethod
       def grad(self) -> Any:
           return self._grad
 
       @property
+      @abstractmethod
       def evaluation_ops(self) -> List[tf.Tensor]:
           return self._evaluation_ops
 
       @property
+      @abstractmethod
       def evaluation_metrics(self) -> List[str]:
           return self._evaluation_metrics
 
