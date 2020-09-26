@@ -34,5 +34,5 @@ class Model(metaclass=ABCMeta):
 
       @staticmethod
       @abstractmethod
-      def shape_y() -> Any:
+      def shape_y() -> Tuple:
           return self._shape_y
