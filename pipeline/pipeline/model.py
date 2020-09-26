@@ -8,7 +8,7 @@ with warnings.catch_warnings():
 class Model(metaclass=ABCMeta):
 
       @abstractmethod
-      def __init__(self, x:tf.Tensor, y:tf.Tensor) -> None:
+      def __init__(self, x: tf.Tensor, y: tf.Tensor) -> None:
           ...
 
       @property
