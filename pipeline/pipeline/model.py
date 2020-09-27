@@ -29,6 +29,10 @@ class Model(metaclass=ABCMeta):
           return self._y_hat
 
       @property
+      def y(self) -> tf.Tensor:
+          return self._y
+
+      @property
       @abstractmethod
       def evaluation_ops(self) -> List[tf.Tensor]:
           return self._evaluation_ops
