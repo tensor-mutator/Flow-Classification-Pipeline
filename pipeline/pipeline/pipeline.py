@@ -4,10 +4,21 @@ with warnings.catch_warnings():
      import tensorflow.compat.v1 as tf
 import numpy as np
 import tqdm
+from typing import Dict
 from .model import Model
-from .metrics import 
+from .metrics import
+from .losses import bp_mll
 
 class Pipeline:
+
+      class InvalidLossError(Exception):
+
+            def __init__(self, msg: str) -> None:
+                super(Pipeline.InvalidLossError, self).__init__(msg)
+
+      LOSSES: Dict = {"bp_mll": bp_mll, "huber_loss": tf.losses.huber_loss, "log_loss": tf.losses.log_loss,
+                      "mse": tf.losses.mean_squared_error, "softmax_cross_entropy": tf.losses.softmax_cross_entropy,
+                      "sigmoid_cross_entropy": tf.losses.sigmoid_cross_entropy}
 
       def __init__(self, model: Model, batch_size: int = 32) -> None:
           self._batch_size = batch_size
@@ -26,6 +37,16 @@ class Pipeline:
       def _get_model(self, model: Model) -> Model:
           X_, y_ = self._iterator.get_next()
           return model(X_, y_)
+
+      def _check_loss(self) -> None:
+          if not self._model.grad:
+             loss = Pipeline.LOSSES.get(self._model.loss, None)
+             if not loss:
+                raise Pipeline.InvalidLossError("Invalid loss: {}".format(self._model.loss))
+             self._model.grad = loss(self._model.y, self._model.y_hat)
+
+      def _check_evaluation_metrics(self) -> None:
+          
 
       def run(self, X_train: np.ndarray, X_test: np.ndarray,
               y_train: np.ndarray, y_test: np.ndarray) -> None:
