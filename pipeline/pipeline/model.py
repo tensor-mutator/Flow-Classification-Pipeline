@@ -21,8 +21,8 @@ class Model(metaclass=ABCMeta):
           return self._grad
 
       @grad.setter
-      def grad(self, op: tf.Tensor) -> None:
-          self._grad = op
+      def grad(self, grad_op: tf.Tensor) -> None:
+          self._grad = grad_op
 
       @property
       def y_hat(self) -> tf.Tensor:
