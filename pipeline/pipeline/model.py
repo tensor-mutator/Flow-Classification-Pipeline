@@ -33,9 +33,9 @@ class Model(metaclass=ABCMeta):
       def evaluation_ops(self) -> List[tf.Tensor]:
           return self._evaluation_ops
 
-     @evaluation_ops.setter
-     def evaluation_ops(self, evaluation_ops: List[tf.Tensor]) -> None:
-         self._evaluation_ops = evaluation_ops
+      @evaluation_ops.setter
+      def evaluation_ops(self, evaluation_ops: List[tf.Tensor]) -> None:
+          self._evaluation_ops = evaluation_ops
 
       @property
       @abstractmethod
