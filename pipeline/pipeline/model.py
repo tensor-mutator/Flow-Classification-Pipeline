@@ -20,6 +20,10 @@ class Model(metaclass=ABCMeta):
       def grad(self) -> tf.Tensor:
           return self._grad
 
+      @grad.setter
+      def grad(self, op: tf.Tensor) -> None:
+          self._grad = op
+
       @property
       def y_hat(self) -> tf.Tensor:
           return self._y_hat
@@ -28,6 +32,10 @@ class Model(metaclass=ABCMeta):
       @abstractmethod
       def evaluation_ops(self) -> List[tf.Tensor]:
           return self._evaluation_ops
+
+     @evaluation_ops.setter
+     def evaluation_ops(self, evaluation_ops: List[tf.Tensor]) -> None:
+         self._evaluation_ops = evaluation_ops
 
       @property
       @abstractmethod
