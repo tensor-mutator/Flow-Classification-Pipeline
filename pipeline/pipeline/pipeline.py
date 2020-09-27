@@ -6,7 +6,7 @@ import numpy as np
 import tqdm
 from typing import Dict
 from .model import Model
-from .metrics import
+from .metrics import MicroPrecision, MicroRecall, MacroPrecision, MicroF1Score, MacroRecall, MacroF1Score, HammingLoss
 from .losses import bp_mll
 
 class Pipeline:
@@ -16,9 +16,18 @@ class Pipeline:
             def __init__(self, msg: str) -> None:
                 super(Pipeline.InvalidLossError, self).__init__(msg)
 
+      class InvalidMetricError(Exception):
+
+            def __init__(self, msg: str) -> None:
+                super(Pipeline.InvalidMetricError, self).__init__(msg)
+
       LOSSES: Dict = {"bp_mll": bp_mll, "huber_loss": tf.losses.huber_loss, "log_loss": tf.losses.log_loss,
                       "mse": tf.losses.mean_squared_error, "softmax_cross_entropy": tf.losses.softmax_cross_entropy,
                       "sigmoid_cross_entropy": tf.losses.sigmoid_cross_entropy}
+
+      EVALUATION_METRICS: Dict = {"micro_precision": MicroPrecision, "micro_recall": MicroRecall, "micro_f1_score": MicroF1Score,
+                                  "macro_precision": MacroPrecision, "macro_recall": MacroRecall, "macro_f1_score": MacroF1Score,
+                                  "hamming_loss": HammingLoss}
 
       def __init__(self, model: Model, batch_size: int = 32) -> None:
           self._batch_size = batch_size
@@ -46,7 +55,13 @@ class Pipeline:
              self._model.grad = loss(self._model.y, self._model.y_hat)
 
       def _check_evaluation_metrics(self) -> None:
-          
+          if not self._model.evaluation_ops:
+             metric_ops = list()
+             for metric in self._model.evaluation_metrics:
+                 if not Pipeline.EVALUATION_METRICS.get(metric, None):
+                    raise Pipeline.InvalidMetricError("Invalid evaluation metric: {}".format(metric))
+                 metric_ops.append(Pipeline.EVALUATION_METRICS[metric](self._model.y, self._model.y_hat))
+             self._model.evaluation_ops = metric_ops
 
       def run(self, X_train: np.ndarray, X_test: np.ndarray,
               y_train: np.ndarray, y_test: np.ndarray) -> None:
