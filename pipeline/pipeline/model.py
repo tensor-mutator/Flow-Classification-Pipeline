@@ -12,9 +12,12 @@ class Model(metaclass=ABCMeta):
           ...
 
       @property
-      @abstractmethod
       def loss(self) -> str:
           return self._loss
+
+      @loss.setter
+      def loss(self, loss: float) -> None:
+          self._loss = loss
 
       @property
       def grad(self) -> tf.Tensor:
