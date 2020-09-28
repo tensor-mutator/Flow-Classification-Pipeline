@@ -80,7 +80,7 @@ class Pipeline:
                  metric_ops.append(Pipeline.EVALUATION_METRICS[metric](self._model.y, self._model.y_hat))
              self._model.evaluation_ops = metric_ops
 
-      def run(self, X_train: np.ndarray, X_test: np.ndarray,
+      def fit(self, X_train: np.ndarray, X_test: np.ndarray,
               y_train: np.ndarray, y_test: np.ndarray) -> None:
           def run_(session, total_loss, total_accuracy) -> List:
               _, loss = session.run([self._model.grad, self._model.loss])
