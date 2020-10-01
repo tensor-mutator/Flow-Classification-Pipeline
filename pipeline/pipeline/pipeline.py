@@ -4,7 +4,7 @@ with warnings.catch_warnings():
      import tensorflow.compat.v1 as tf
 import numpy as np
 import tqdm
-from typing import Dict
+from typing import Dict, List
 from .model import Model
 from .exceptions import *
 from .metrics import MicroPrecision, MicroRecall, MacroPrecision, MicroF1Score, MacroRecall, MacroF1Score, HammingLoss
