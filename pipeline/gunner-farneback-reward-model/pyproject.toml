@@ -5,7 +5,7 @@ description = ""
 authors = ["Debajyoti Raychaudhuri <draychaudhuri1086@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = "3.6"
+python = "3.6.8"
 opencv-python = "^4.4.0.44"
 flappy-bird-dataset = { path = "../flappy-bird-dataset/" }
 

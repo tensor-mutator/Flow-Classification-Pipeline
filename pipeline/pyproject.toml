@@ -5,7 +5,7 @@ description = ""
 authors = ["Debajyoti Raychaudhuri <draychaudhuri1086@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = "3.6"
+python = "3.6.8"
 tensorflow = "1.15.3"
 opencv-python = "^4.4.0.44"
 gunner-farneback-reward-model = { path = "gunner-farneback-reward-model/" }
