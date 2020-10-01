@@ -24,12 +24,13 @@ class Pipeline:
                                   "hamming_loss": HammingLoss}
 
       def __init__(self, model: Model, batch_size: int, n_epoch: int, loss: str = None,
-                   optimizer: str = None, lr: float = None) -> None:
+                   optimizer: str = None, lr: float = None, evaluation_metrics: List = None) -> None:
           self._batch_size = batch_size
           self._n_epoch = epoch
           self._loss = loss
           self._optimizer = optimizer
           self._lr = lr
+          self._evaluation_metrics
           self._X_placeholder = tf.placeholder(shape=[None] + list(model.shape_X()), dtype=tf.float32)
           self._y_placeholder = tf.placeholder(shape=[None] + list(model.shape_y()), dtype=tf.int32)
           self._iterator = self._generate_iterator()
@@ -60,7 +61,7 @@ class Pipeline:
       def _check_evaluation_metrics(self) -> None:
           if not self._model.evaluation_ops:
              metric_ops = list()
-             for metric in self._model.evaluation_metrics:
+             for metric in self._evaluation_metrics:
                  if not Pipeline.EVALUATION_METRICS.get(metric, None):
                     raise InvalidMetricError("Invalid evaluation metric: {}".format(metric))
                  metric_ops.append(Pipeline.EVALUATION_METRICS[metric](self._model.y, self._model.y_hat))
