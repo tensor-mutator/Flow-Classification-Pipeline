@@ -6,6 +6,36 @@ with warnings.catch_warnings():
 __all__ = ["MicroPrecision", "MicroRecall", "MicroF1Score", "MacroPrecision", "MacroRecall", "MacroF1Score",
            "HammingLoss"]
 
+def TP(y: tf.Tensor, y_hat: tf.Tensor, type: str = "Macro") -> tf.Tensor:
+    if type == "Macro":
+       return tf.reduce_sum(tf.where(tf.cast(y_hat, tf.bool), y, tf.zeros_like(y_hat)), axis=0)
+    else:
+       return tf.reduce_sum(tf.where(tf.cast(y_hat, tf.bool), y, tf.zeros_like(y_hat)))
+
+def FP(y: tf.Tensor, y_hat: tf.Tensor, type: str = "Macro") -> tf.Tensor:
+    if type == "Macro":
+       return tf.reduce_sum(tf.where(tf.cast(y_hat, tf.bool), tf.cast(tf.equal(y, 0), tf.float32),
+                                     tf.zeros_like(y_hat)), axis=0)
+    else:
+       return tf.reduce_sum(tf.where(tf.cast(y_hat, tf.bool), tf.cast(tf.equal(y, 0), tf.float32),
+                                     tf.zeros_like(y_hat)))
+
+def TN(y: tf.Tensor, y_hat: tf.Tensor, type: str = "Macro") -> tf.Tensor:
+    if type == "Macro":
+       return tf.reduce_sum(tf.where(tf.equal(y_hat, 0), tf.cast(tf.equal(y, 0), tf.float32),
+                                     tf.zeros_like(y_hat)), axis=0)
+    else:
+       return tf.reduce_sum(tf.where(tf.equal(y_hat, 0), tf.cast(tf.equal(y, 0), tf.float32),
+                                     tf.zeros_like(y_hat)))
+
+def FN(y: tf.Tensor, y_hat: tf.Tensor, type: str = "Macro") -> tf.Tensor:
+    if type == "Macro":
+       return tf.reduce_sum(tf.where(tf.equal(y_hat, 0), y, tf.float32),
+                                     tf.zeros_like(y_hat)), axis=0)
+    else:
+       return tf.reduce_sum(tf.where(tf.equal(y_hat, 0), y, tf.float32),
+                                     tf.zeros_like(y_hat)))
+
 def MicroPrecision(y: tf.Tensor, y_hat: tf.Tensor) -> tf.Tensor:
     TP_plus_FP = tf.reduce_sum(y_hat)
     TP = tf.reduce_sum(tf.where(tf.cast(y_hat, tf.bool), y, tf.zeros_like(y_hat)))
