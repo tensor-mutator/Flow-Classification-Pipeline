@@ -7,7 +7,7 @@ from typing import Tuple
 from pipeline import Pipeline, Model
 import flappy_bird_dataset
 
-class RewardModel(Model):
+class GunnerFarnebackRewardModel(Model):
 
       def __init__(self, X: tf.Tensor, y: tf.Tensor) -> None:
           self._X = X
@@ -42,7 +42,7 @@ class RewardModel(Model):
           self._grad = optimizer.minimize(self._loss)
 
 def main():
-    pipeline = Pipeline(RewardModel, batch_size=32, n_epoch=1000, evaluation_metrics=["macro_precision", "macro_recall",
+    pipeline = Pipeline(GunnerFarnebackRewardModel, batch_size=32, n_epoch=1000, evaluation_metrics=["macro_precision", "macro_recall",
                                                                                       "macro_f1_score", "hamming_loss"])
     X_train, X_test, y_train, y_test = flappy_bird_dataset.load_flow(resolution=(64, 64))
     pipeline.fit(X_train, X_test, y_train, y_test)

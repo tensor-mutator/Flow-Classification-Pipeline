@@ -8,7 +8,7 @@ authors = ["Debajyoti Raychaudhuri <draychaudhuri1086@gmail.com>"]
 python = "3.6"
 tensorflow = "1.15.3"
 opencv-python = "^4.4.0.44"
-reward-model = { path = "reward-model/" }
+gunner-farneback-reward-model = { path = "gunner-farneback-reward-model/" }
 
 [tool.poetry.dev-dependencies]
 
