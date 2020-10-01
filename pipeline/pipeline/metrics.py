@@ -4,7 +4,7 @@ with warnings.catch_warnings():
      import tensorflow.compat.v1 as tf
 
 __all__ = ["MicroPrecision", "MicroRecall", "MicroF1Score", "MacroPrecision", "MacroRecall", "MacroF1Score",
-           "HammingLoss"]
+           "HammingLoss", "TP", "FP", "TN", "FN"]
 
 def TP(y: tf.Tensor, y_hat: tf.Tensor, type: str = "Macro") -> tf.Tensor:
     if type == "Macro":
