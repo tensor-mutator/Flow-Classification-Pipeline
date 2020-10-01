@@ -6,25 +6,11 @@ import numpy as np
 import tqdm
 from typing import Dict
 from .model import Model
+from .exceptions import *
 from .metrics import MicroPrecision, MicroRecall, MacroPrecision, MicroF1Score, MacroRecall, MacroF1Score, HammingLoss
 from .losses import bp_mll
 
 class Pipeline:
-
-      class InvalidLossError(Exception):
-
-            def __init__(self, msg: str) -> None:
-                super(Pipeline.InvalidLossError, self).__init__(msg)
-
-      class InvalidOptimizerError(Exception):
-
-            def __init__(self, msg: str) -> None:
-                super(Pipeline.InvalidOptimizerError, self).__init__(msg)
-
-      class InvalidMetricError(Exception):
-
-            def __init__(self, msg: str) -> None:
-                super(Pipeline.InvalidMetricError, self).__init__(msg)
 
       LOSSES: Dict = {"bp_mll": bp_mll, "huber_loss": tf.losses.huber_loss, "log_loss": tf.losses.log_loss,
                       "mse": tf.losses.mean_squared_error, "softmax_cross_entropy": tf.losses.softmax_cross_entropy,
@@ -64,11 +50,11 @@ class Pipeline:
           if not self._model.grad:
              loss = Pipeline.LOSSES.get(self._loss, None)
              if not loss:
-                raise Pipeline.InvalidLossError("Invalid loss: {}".format(self._loss))
+                raise InvalidLossError("Invalid loss: {}".format(self._loss))
              self._model.loss = loss(self._model.y, self._model.y_hat)
              optimizer = Pipeline.OPTIMIZERS.get(self._optimizer, None)
              if not optimizer:
-                raise Pipeline.InvalidOptimizerError("Invalid optimizer: {}".format(self._optimizer))
+                raise InvalidOptimizerError("Invalid optimizer: {}".format(self._optimizer))
              self._model.grad = optimizer(learning_rate=self._lr).minimize(self._model.loss)
 
       def _check_evaluation_metrics(self) -> None:
@@ -76,7 +62,7 @@ class Pipeline:
              metric_ops = list()
              for metric in self._model.evaluation_metrics:
                  if not Pipeline.EVALUATION_METRICS.get(metric, None):
-                    raise Pipeline.InvalidMetricError("Invalid evaluation metric: {}".format(metric))
+                    raise InvalidMetricError("Invalid evaluation metric: {}".format(metric))
                  metric_ops.append(Pipeline.EVALUATION_METRICS[metric](self._model.y, self._model.y_hat))
              self._model.evaluation_ops = metric_ops
 
