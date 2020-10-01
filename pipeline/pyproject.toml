@@ -10,6 +10,7 @@ tensorflow = "1.15.3"
 opencv-python = "^4.4.0.44"
 gunner-farneback-reward-model = { path = "gunner-farneback-reward-model/" }
 flappy-bird-dataset = { path = "flappy-bird-dataset/" }
+tqdm = "^4.50.0"
 
 [tool.poetry.dev-dependencies]
 
