@@ -30,10 +30,10 @@ def TN(y: tf.Tensor, y_hat: tf.Tensor, type: str = "Macro") -> tf.Tensor:
 
 def FN(y: tf.Tensor, y_hat: tf.Tensor, type: str = "Macro") -> tf.Tensor:
     if type == "Macro":
-       return tf.reduce_sum(tf.where(tf.equal(y_hat, 0), y, tf.float32),
+       return tf.reduce_sum(tf.where(tf.equal(y_hat, 0), y,
                                      tf.zeros_like(y_hat)), axis=0)
     else:
-       return tf.reduce_sum(tf.where(tf.equal(y_hat, 0), y, tf.float32),
+       return tf.reduce_sum(tf.where(tf.equal(y_hat, 0), y,
                                      tf.zeros_like(y_hat)))
 
 def MicroPrecision(y: tf.Tensor, y_hat: tf.Tensor) -> tf.Tensor:
