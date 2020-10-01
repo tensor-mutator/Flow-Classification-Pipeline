@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "lucas-kanade-model"
+name = "reward-model"
 version = "0.1.0"
 description = ""
 authors = ["Debajyoti Raychaudhuri <draychaudhuri1086@gmail.com>"]
