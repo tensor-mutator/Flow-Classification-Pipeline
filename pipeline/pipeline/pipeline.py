@@ -26,7 +26,7 @@ class Pipeline:
       def __init__(self, model: Model, batch_size: int, n_epoch: int, loss: str = None,
                    optimizer: str = None, lr: float = None, evaluation_metrics: List = None) -> None:
           self._batch_size = batch_size
-          self._n_epoch = epoch
+          self._n_epoch = n_epoch
           self._loss = loss
           self._optimizer = optimizer
           self._lr = lr if lr else 1e-4
@@ -77,7 +77,7 @@ class Pipeline:
               total_loss, total_accuracy
           config = tf.ConfigProto()
           config.gpu_options.allow_growth = True
-          session = tf.Session(config=config)
+          self._session = session = tf.Session(config=config)
           with session.graph.as_default():
                session.run(tf.global_variables_initializer())
                for epoch in range(self._n_epoch):
