@@ -29,7 +29,7 @@ class Pipeline:
           self._n_epoch = epoch
           self._loss = loss
           self._optimizer = optimizer
-          self._lr = lr
+          self._lr = lr if lr else 1e-4
           self._evaluation_metrics
           self._X_placeholder = tf.placeholder(shape=[None] + list(model.shape_X()), dtype=tf.float32)
           self._y_placeholder = tf.placeholder(shape=[None] + list(model.shape_y()), dtype=tf.int32)
