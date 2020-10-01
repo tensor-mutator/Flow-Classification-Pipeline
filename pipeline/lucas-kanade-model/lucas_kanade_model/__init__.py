@@ -3,7 +3,7 @@ with warnings.catch_warnings():
      warnings.filterwarnings("ignore", category=FutureWarning)
      import tensorflow.compat.v1 as tf
 from pipeline import Pipeline, Model
-from .Dataset.load import load
+import FlappyBirdDataset
 
 class LucasKanadeModel(Model):
 
@@ -13,10 +13,10 @@ class LucasKanadeModel(Model):
           self._build_graph()
 
       def _build_graph(self) -> None:
-
+          
 
 def main():
     pipeline = Pipeline(LucasKanadeModel, batch_size=32, n_epoch=1000, evaluation_metrics=["macro_precision", "macro_recall",
                                                                                            "macro_f1_score", "hamming_loss"])
-    X_train, X_test, y_train, y_test = load()
+    X_train, X_test, y_train, y_test = FlappyBirdDataset.load_flow()
     pipeline.fit(X_train, X_test, y_train, y_test)
