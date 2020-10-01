@@ -1,6 +1,6 @@
 """
 0 -> No reward
-1 -> Reward
+1 -> Success
 2 -> Hit
 """
 
@@ -52,16 +52,34 @@ def _get_X(data, resolution: Tuple, flow: bool = False) -> np.ndarray:
            X = np.concatenate([X, img_scaled])
     return X
 
-def load(resolution: Tuple, train_size: float = 0.8, test_size: float = 0.2) -> List:
+def _filter_data(data, datapoints_per_class) -> List:
+    no_reward_data = list(filter(lambda x: x["reward"]==0, data))
+    success_data = list(filter(lambda x: x["reward"]==1, data))
+    hit_data = list(filter(lambda x: x["reward"]==-5, data))
+    n_no_reward = len(no_reward_data)
+    n_success = len(success_data)
+    n_hit = len(hit_data)
+    n_data = min(n_no_reward, n_success, n_hit, datapoints_per_class)
+    data = list()
+    no_reward_indices = np.random.randint(n_no_reward, size=n_data)
+    success_indices = np.random.randint(n_success, size=n_data)
+    hit_indices = np.random.randint(n_hit, size=n_data)
+    for no_reward_idx, success_idx, hit_idx in zip(no_reward_indices, success_indices, hit_indices):
+        data.extend([no_reward_data[no_reward_idx], success_data[success_idx], hit_data[hit_idx]])
+    return data
+
+def load(resolution: Tuple, datapoints_per_class: int, train_size: float = 0.8, test_size: float = 0.2) -> List:
     with open(meta_file, "r") as f_obj:
          data = json.load(f_obj)
+    data = _filter_data(data, datapoints_per_class)
     y = _get_y(data)
     X = _get_X(data, resolution)
     return train_test_split(X, y, train_size=train_size, test_size=test_size)
 
-def load_flow(resolution: Tuple, train_size: float = 0.8, test_size: float = 0.2) -> List:
+def load_flow(resolution: Tuple, datapoints_per_class: int, train_size: float = 0.8, test_size: float = 0.2) -> List:
     with open(meta_file, "r") as f_obj:
          data = json.load(f_obj)
+    data = _filter_data(data, datapoints_per_class)
     y = _get_y(data)
     X = _get_X(data, resolution, flow=True)
     return train_test_split(X, y, train_size=train_size, test_size=test_size)
