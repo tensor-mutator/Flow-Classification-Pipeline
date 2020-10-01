@@ -8,7 +8,7 @@ authors = ["Debajyoti Raychaudhuri <draychaudhuri1086@gmail.com>"]
 python = "3.6"
 tensorflow = "1.15.3"
 opencv-python = "^4.4.0.44"
-lucas-kanade-model = { path = "lucas-kanade-model/" }
+reward-model = { path = "reward-model/" }
 
 [tool.poetry.dev-dependencies]
 
