@@ -61,7 +61,7 @@ def MacroPrecision(y: tf.Tensor, y_hat: tf.Tensor) -> tf.Tensor:
     y_pred = tf.argmax(y_hat, axis=-1)
     y_cap = tf.one_hot(indices=y_pred, depth=tf.shape(y_hat)[-1])
     TP_plus_FP = tf.reduce_sum(y_cap, axis=0)
-    TP = tf.reduce_sum(tf.where(tf.cast(y_hat, tf.bool), y, tf.zeros_like(y_cap)), axis=0)
+    TP = tf.reduce_sum(tf.where(tf.cast(y_cap, tf.bool), y, tf.zeros_like(y_cap)), axis=0)
     return tf.reduce_mean(TP/TP_plus_FP)
 
 def MacroRecall(y: tf.Tensor, y_hat: tf.Tensor) -> tf.Tensor:
