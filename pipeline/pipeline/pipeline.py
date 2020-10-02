@@ -174,7 +174,8 @@ class Pipeline:
                  summary.value.add(tag="{} Performance/Epoch - MicroTN".format(self._model_name), simple_value=score)
               if metric == "MicroFN" and self._config & config.MICRO_FN_EVENT:
                  summary.value.add(tag="{} Performance/Epoch - MicroFN".format(self._model_name), simple_value=score)
-          writer.add_summary(summary, epoch)
+          if writer:
+             writer.add_summary(summary, epoch)
 
       def _fit(self, X_train: np.ndarray, X_test: np.ndarray,
                y_train: np.ndarray, y_test: np.ndarray, session: tf.Session,
