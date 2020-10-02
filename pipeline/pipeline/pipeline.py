@@ -32,7 +32,7 @@ class Pipeline:
           self._lr = lr if lr else 1e-4
           self._evaluation_metrics = evaluation_metrics
           self._X_placeholder = tf.placeholder(shape=[None] + list(model.shape_X()) + [3], dtype=tf.float32)
-          self._y_placeholder = tf.placeholder(shape=[None] + list(model.shape_y()), dtype=tf.int32)
+          self._y_placeholder = tf.placeholder(shape=[None] + list(model.shape_y()) + [3], dtype=tf.int32)
           self._iterator = self._generate_iterator()
           self._model = self._get_model(model)
           self._check_loss()
