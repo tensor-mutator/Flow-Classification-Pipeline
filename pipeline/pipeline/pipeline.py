@@ -90,22 +90,22 @@ class Pipeline:
                    test_loss, test_accuracy = 0, [0 for _ in range(len(self._evaluation_metrics))]
                    session.run(self._iterator.initializer, feed_dict={self._X_placeholder: X_train,
                                                                       self._y_placeholder: y_train})
-                   with tqdm(total=len(y_train)) as progress:
-                        try:
-                           while True:
-                                 train_loss, train_accuracy = run_(session, train_loss, train_accuracy)
-                                 progress.update(self._batch_size)
-                        except tf.errors.OutOfRangeError:
-                           ...
+                   #with tqdm(total=len(y_train)) as progress:
+                   try:
+                      while True:
+                            train_loss, train_accuracy = run_(session, train_loss, train_accuracy)
+                                 #progress.update(self._batch_size)
+                   except tf.errors.OutOfRangeError:
+                      ...
                    session.run(self._iterator.initializer, feed_dict={self._X_placeholder: X_test,
                                                                       self._y_placeholder: y_test})
-                   with tqdm(total=len(y_test)) as progress:
-                        try:
-                           while True:
-                                 test_loss, test_accuracy = run_(session, test_loss, test_accuracy)
-                                 progress.update(self._batch_size)
-                        except tf.errors.OutOfRangeError:
-                           ...
+                   #with tqdm(total=len(y_test)) as progress:
+                   try:
+                      while True:
+                            test_loss, test_accuracy = run_(session, test_loss, test_accuracy)
+                                 #progress.update(self._batch_size)
+                   except tf.errors.OutOfRangeError:
+                      ...
                    print(f"\nepoch: {CYAN}{epoch+1}{DEFAULT}")
                    print(f"\ttraining set:")
                    print(f"\t\tloss: {GREEN}{train_loss/len(y_train)}{DEFAULT}")
