@@ -39,7 +39,7 @@ def _get_X(data, resolution: Tuple, flow: bool = False) -> np.ndarray:
        for path in X_flow_path:
            img = cv2.imread(os.path.join(data_path, path))
            img_scaled = cv2.resize(img.astype(np.float32), resolution)
-           X = np.concatenate([X, img_scaled])
+           X = np.concatenate([X, np.expand_dims(img_scaled, axis=0)])
     else:
        X_src_img_path = map(lambda x: x["src_image"], data)
        X_dest_img_path = map(lambda x: x["dest_image"], data)
@@ -50,7 +50,7 @@ def _get_X(data, resolution: Tuple, flow: bool = False) -> np.ndarray:
            src_img_scaled = cv2.resize(src_img.astype(np.float32), resolution)
            dest_img_scaled = cv2.resize(dest_img.astype(np.float32), resolution)
            img_scaled = np.stack([src_img_scaled, dest_img_scaled], axis=0)
-           X = np.concatenate([X, img_scaled])
+           X = np.concatenate([X, np.expand_dims(img_scaled, axis=0)])
     return X
 
 def _filter_data(data, datapoints_per_class) -> List:
