@@ -141,7 +141,7 @@ class Pipeline:
           config.gpu_options.allow_growth = True
           return tf.Session(config=config)
 
-      def _save_summary(writer: tf.summary.FileWriter, epoch, loss, metrics) -> None:
+      def _save_summary(self, writer: tf.summary.FileWriter, epoch: int, loss: float, metrics: zip) -> None:
           summary = tf.Summary()
           if self._config & config.LOSS_EVENT:
              summary.value.add(tag="{} Performance/Epoch - Loss".format(self._model_name), simple_value=loss)
