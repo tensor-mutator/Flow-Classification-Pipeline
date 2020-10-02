@@ -1,5 +1,6 @@
 from enum import IntEnum, unique
 
+@unique
 class config(IntEnum):
 
       DEFAULT: bin = 0b000000000000000000
@@ -13,11 +14,31 @@ class config(IntEnum):
       MICRO_PRECISION_EVENT: bin = 0b000000000010000000
       MICRO_RECALL_EVENT: bin = 0b000000000100000000
       MICRO_FI_SCORE_EVENT: bin = 0b000000001000000000
-      TP_MACRO_EVENT: bin = 0b000000010000000000
-      FP_MACRO_EVENT: bin = 0b000000100000000000
-      TN_MACRO_EVENT: bin = 0b000001000000000000
-      FN_MACRO_EVENT: bin = 0b000010000000000000
-      TP_MICRO_EVENT: bin = 0b000100000000000000
-      FP_MICRO_EVENT: bin = 0b001000000000000000
-      TN_MICRO_EVENT: bin = 0b010000000000000000
-      FN_MICRO_EVENT: bin = 0b100000000000000000
+      MACRO_TP_EVENT: bin = 0b000000010000000000
+      MACRO_FP_EVENT: bin = 0b000000100000000000
+      MACRO_TN_EVENT: bin = 0b000001000000000000
+      MACRO_FN_EVENT: bin = 0b000010000000000000
+      MICRO_TP_EVENT: bin = 0b000100000000000000
+      MICRO_FP_EVENT: bin = 0b001000000000000000
+      MICRO_TN_EVENT: bin = 0b010000000000000000
+      MICRO_FN_EVENT: bin = 0b100000000000000000
+
+      @staticmethod
+      def show() -> None:
+          print("SAVE_WEIGHTS")
+          print("LOAD_WEIGHTS")
+          print("LOSS_EVENT")
+          print("HAMMING_LOSS_EVENT")
+          print("MACRO_PRECISION_EVENT")
+          print("MACRO_RECALL_EVENT")
+          print("MACRO_FI_SCORE_EVENT")
+          print("MICRO_PRECISION_EVENT")
+          print("MICRO_RECALL_EVENT")
+          print("MICRO_FI_SCORE_EVENT")
+          print("MACRO_TP_EVENT")
+          print("MACRO_FP_EVENT")
+          print("MACRO_TN_EVENT")
+          print("MICRO_FN_EVENT")
+          print("MICRO_TP_EVENT")
+          print("MICRO_FP_EVENT")
+          print("MICRO_TN_EVENT")
