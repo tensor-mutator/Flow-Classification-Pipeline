@@ -259,6 +259,7 @@ class Pipeline:
                self._fit(X_train, X_test, y_train, y_test, session, train_writer, test_writer)
 
       def predict(self, X: np.ndarray) -> np.ndarray:
+          self._load_weights()
           with self._session.graph.as_default():
                return self._session.run(self._predict_model.y_hat, feed_dict={self._X_predict: X})
 
