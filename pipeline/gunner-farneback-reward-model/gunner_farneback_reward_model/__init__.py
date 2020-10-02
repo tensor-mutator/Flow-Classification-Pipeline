@@ -38,6 +38,8 @@ class GunnerFarnebackRewardModel(Model):
                                  activation=tf.nn.leaky_relu)(dense_2)
           y_logits = layers.Dense(units=3)(dense_3)
           self._y_hat = layers.Activation(tf.nn.softmax)(y_logits)
+          if self._y is None:
+             return
           self._loss = tf.losses.softmax_cross_entropy(logits=y_logits, onehot_labels=self._y)
           optimizer = tf.train.AdamOptimizer(learning_rate=1e-4)
           self._grad = optimizer.minimize(self._loss)
