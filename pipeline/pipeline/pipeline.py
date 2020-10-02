@@ -123,11 +123,11 @@ class Pipeline:
                         except tf.errors.OutOfRangeError:
                            ...
                    print(f"{UP}\r{WIPE}\n{WIPE}EPOCH: {CYAN}{epoch+1}{DEFAULT}")
-                   print(f"\tTraining set:")
+                   print(f"\n\tTraining set:")
                    print(f"\t\tLoss: {GREEN}{train_loss/len(y_train)}{DEFAULT}")
                    for metric, accuracy in zip(self._evaluation_metrics.get("TRAIN", []), train_accuracy):
                        print(f"\t\t{metric}: {GREEN}{accuracy/n_batches_train}{DEFAULT}")
-                   print(f"\tTest set:")
+                   print(f"\n\tTest set:")
                    print(f"\t\tLoss: {MAGENTA}{test_loss/len(y_test)}{DEFAULT}")
                    for metric, accuracy in zip(self._evaluation_metrics.get("TEST", []), test_accuracy):
                        print(f"\t\t{metric}: {MAGENTA}{accuracy/n_batches_test}{DEFAULT}")
