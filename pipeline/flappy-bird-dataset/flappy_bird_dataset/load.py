@@ -11,8 +11,9 @@ import json
 import numpy as np
 from sklearn.model_selection import train_test_split
 
-data_path = os.path.join(__file__, "data")
-meta_file = os.path.join(__file__, "rewards.meta")
+path = os.path.split(__file__)[0]
+data_path = os.path.join(path, "data")
+meta_file = os.path.join(path, "rewards.meta")
 
 def _one_hot_y(y: np.ndarray) -> np.ndarray:
     one_hot = np.zeros(shape=[np.size(y), 3], dtype=np.float32)
