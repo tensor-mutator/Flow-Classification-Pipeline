@@ -88,8 +88,8 @@ class Pipeline:
           summary_cond += config.MACRO_TP_EVENT+config.MACRO_FP_EVENT+config.MACRO_TN_EVENT+config.MACRO_FN_EVENT
           summary_cond += config.MICRO_TP_EVENT+config.MICRO_FP_EVENT+config.MICRO_TN_EVENT+config.MICRO_FN_EVENT
           if self._config & summary_cond:
-             train_writer = tf.summary.FileWriter(os.path.join(self._model_name, "{} TRAIN EVENT".format(self._model_name)), self._session.graph)
-             test_writer = tf.summary.FileWriter(os.path.join(self._model_name, "{} TEST EVENT".format(self._model_name)), self._session.graph)
+             train_writer = tf.summary.FileWriter(os.path.join(self._model_name, "{} TRAIN EVENTS".format(self._model_name)), self._session.graph)
+             test_writer = tf.summary.FileWriter(os.path.join(self._model_name, "{} TEST EVENTS".format(self._model_name)), self._session.graph)
              return train_writer, test_writer
           return None, None
 
