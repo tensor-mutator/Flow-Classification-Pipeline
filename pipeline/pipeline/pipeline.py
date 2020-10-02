@@ -2,9 +2,12 @@ import warnings
 with warnings.catch_warnings():  
      warnings.filterwarnings("ignore", category=FutureWarning)
      import tensorflow.compat.v1 as tf
+from contextlib import contextmanager
 import numpy as np
+import os
 from tqdm import tqdm
-from typing import Dict, List
+from glob import glob
+from typing import Dict, List, Generator
 from .model import Model
 from .exceptions import *
 from .metrics import (MicroPrecision, MicroRecall, MacroPrecision, MicroF1Score, MacroRecall,
@@ -52,6 +55,36 @@ class Pipeline:
           self._check_loss()
           self._check_evaluation_metrics()
           self._session = self._get_session()
+          self._checkpoint_path = model.__name__
+          self._generate_checkpoint_directory()
+
+      @contextmanager
+      def _fit_context(self) -> Generator:
+          self._load_weights()
+          yield self._session
+          self._save_weights()
+
+      def _load_weights(self) -> None:
+          if self._config & config.LOAD_WEIGHTS:
+             self._saver = tf.train.Saver(max_to_keep=5)
+             if glob(os.path.join(self._checkpoint_path, "{}.ckpt.*".format(self._checkpoint_path))):
+                ckpt = tf.train.get_checkpoint_state(self._checkpoint_path)
+                self._saver.restore(self._session, ckpt.model_checkpoint_path)
+
+      def _save_weights(self) -> None:
+          if self._config & config.SAVE_WEIGHTS:
+             if getattr(self, "_saver", None) is None:
+                self._saver = tf.train.Saver(max_to_keep=5)
+             self._saver.save(self._session, os.path.join(self._checkpoint_path, "{}.ckpt".format(self._checkpoint_path)))
+
+      def _generate_checkpoint_directory(self) -> None:
+          checkpoint_directory_cond = config.SAVE_WEIGHTS+config.LOSS_EVENT+config.HAMMING_LOSS_EVENT+config.MACRO_PRECISION_EVENT+config.MACRO_RECALL_EVENT
+          checkpoint_directory_cond += config.MACRO_F1_SCORE_EVENT+config.MICRO_PRECISION_EVENT+config.MICRO_RECALL_EVENT+config.MICRO_F1_SCORE_EVENT
+          checkpoint_directory_cond += config.MACRO_TP_EVENT+config.MACRO_FP_EVENT+config.MACRO_TN_EVENT+config.MACRO_FN_EVENT
+          checkpoint_directory_cond += config.MICRO_TP_EVENT+config.MICRO_FP_EVENT+config.MICRO_TN_EVENT+config.MICRO_FN_EVENT
+          if self._config & checkpoint_directory_cond:
+             if not os.path.exists(self._checkpoint_path):
+                os.mkdir(self._checkpoint_path)
 
       def _generate_iterator(self) -> tf.data.Iterator:
           dataset = tf.data.Dataset.from_tensor_slices((self._X_placeholder, self._y_placeholder))
@@ -93,8 +126,8 @@ class Pipeline:
           config.gpu_options.allow_growth = True
           return tf.Session(config=config)
 
-      def fit(self, X_train: np.ndarray, X_test: np.ndarray,
-              y_train: np.ndarray, y_test: np.ndarray) -> None:
+      def _fit(self, X_train: np.ndarray, X_test: np.ndarray,
+               y_train: np.ndarray, y_test: np.ndarray, session: tf.Session) -> None:
           def run_(session, total_loss, total_accuracy, train=True) -> List:
               if train:
                  _, loss, accuracy_scores = session.run([self._model.grad, self._model.loss, self._model.evaluation_ops_train])
@@ -105,26 +138,26 @@ class Pipeline:
               return total_loss, total_accuracy
           n_batches_train = np.ceil(np.size(y_train, axis=0)/self._batch_size)
           n_batches_test = np.ceil(np.size(y_test, axis=0)/self._batch_size)
-          with self._session.graph.as_default():
-               self._session.run(tf.global_variables_initializer())
+          with session.graph.as_default():
+               session.run(tf.global_variables_initializer())
                for epoch in range(self._n_epoch):
                    train_loss, train_accuracy = 0, [0 for _ in range(len(self._evaluation_metrics.get("TRAIN", [])))]
                    test_loss, test_accuracy = 0, [0 for _ in range(len(self._evaluation_metrics.get("TEST", [])))]
-                   self._session.run(self._iterator.initializer, feed_dict={self._X_placeholder: X_train,
+                   session.run(self._iterator.initializer, feed_dict={self._X_placeholder: X_train,
                                                                       self._y_placeholder: y_train})
                    with tqdm(total=len(y_train)) as progress:
                         try:
                            while True:
-                                 train_loss, train_accuracy = run_(self._session, train_loss, train_accuracy)
+                                 train_loss, train_accuracy = run_(session, train_loss, train_accuracy)
                                  progress.update(self._batch_size)
                         except tf.errors.OutOfRangeError:
                            ...
-                   self._session.run(self._iterator.initializer, feed_dict={self._X_placeholder: X_test,
+                   session.run(self._iterator.initializer, feed_dict={self._X_placeholder: X_test,
                                                                       self._y_placeholder: y_test})
                    with tqdm(total=len(y_test)) as progress:
                         try:
                            while True:
-                                 test_loss, test_accuracy = run_(self._session, test_loss, test_accuracy, train=False)
+                                 test_loss, test_accuracy = run_(session, test_loss, test_accuracy, train=False)
                                  progress.update(self._batch_size)
                         except tf.errors.OutOfRangeError:
                            ...
@@ -137,6 +170,11 @@ class Pipeline:
                    print(f"\t\tLoss: {MAGENTA}{test_loss/len(y_test)}{DEFAULT}")
                    for metric, accuracy in zip(self._evaluation_metrics.get("TEST", []), test_accuracy):
                        print(f"\t\t{metric}: {MAGENTA}{accuracy/n_batches_test}{DEFAULT}")
+
+       def fit(self, X_train: np.ndarray, X_test: np.ndarray,
+               y_train: np.ndarray, y_test: np.ndarray) -> None:
+           with self._fit_context() as session:
+                _fit(X_train, X_test, y_train, y_test, session)
 
       def __del__(self) -> None:
           self._session.close()
