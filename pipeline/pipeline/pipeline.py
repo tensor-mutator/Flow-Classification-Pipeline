@@ -229,7 +229,7 @@ class Pipeline:
       def fit(self, X_train: np.ndarray, X_test: np.ndarray,
               y_train: np.ndarray, y_test: np.ndarray) -> None:
           with self._fit_context() as [session, train_writer, test_writer]:
-               _fit(X_train, X_test, y_train, y_test, session, train_writer, test_writer)
+               self._fit(X_train, X_test, y_train, y_test, session, train_writer, test_writer)
 
       def __del__(self) -> None:
           self._session.close()
