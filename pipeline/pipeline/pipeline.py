@@ -247,8 +247,8 @@ class Pipeline:
                                       metrics=zip(self._evaluation_metrics.get("TEST", []), test_score))
 
       def _print_summary(self, epoch: int, train_loss: loss, train_metric: zip,
-                        n_batches_train: int, test_loss: float, test_metric: zip
-                        n_batches_test: int) -> None:
+                         n_batches_train: int, test_loss: float, test_metric: zip,
+                         n_batches_test: int) -> None:
           print(f"{UP}\r{WIPE}\n{WIPE}EPOCH: {CYAN}{epoch}{DEFAULT}")
           print(f"\n\tTraining set:")
           print(f"\n\t\tLoss: {GREEN}{train_loss/n_batches_train}{DEFAULT}")
