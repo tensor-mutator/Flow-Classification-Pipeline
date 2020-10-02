@@ -41,6 +41,10 @@ class GunnerFarnebackRewardModel(Model):
           optimizer = tf.train.AdamOptimizer(learning_rate=1e-4)
           self._grad = optimizer.minimize(self._loss)
 
+      @property
+      def evaluation_ops(self) -> List[tf.Tensor]:
+          return None
+ 
 def main():
     pipeline = Pipeline(GunnerFarnebackRewardModel, batch_size=32, n_epoch=1000, evaluation_metrics=["macro_precision", "macro_recall",
                                                                                                      "macro_f1_score", "hamming_loss"])
