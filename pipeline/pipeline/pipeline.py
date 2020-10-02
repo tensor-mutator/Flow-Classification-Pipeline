@@ -246,7 +246,7 @@ class Pipeline:
                    self._save_summary(test_writer, epoch=epoch+1, loss=test_loss/n_batches_test,
                                       metrics=zip(self._evaluation_metrics.get("TEST", []), test_score))
 
-      def _print_summary(self, epoch: int, train_loss: loss, train_metric: zip,
+      def _print_summary(self, epoch: int, train_loss: float, train_metric: zip,
                          n_batches_train: int, test_loss: float, test_metric: zip,
                          n_batches_test: int) -> None:
           print(f"{UP}\r{WIPE}\n{WIPE}EPOCH: {CYAN}{epoch}{DEFAULT}")
