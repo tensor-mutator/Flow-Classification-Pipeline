@@ -60,8 +60,8 @@ class Pipeline:
       def _generate_local_graph(self, model: Model) -> List:
           with tf.variable_scope("local"):
                model = self._get_model(model)
-               self._check_loss()
-               self._check_evaluation_metrics()
+               self._check_loss(model)
+               self._check_evaluation_metrics(model)
                return model
 
       @contextmanager
@@ -134,18 +134,18 @@ class Pipeline:
                model = model(self._X_predict, None)
           return model
 
-      def _check_loss(self) -> None:
-          if not self._model.grad:
+      def _check_loss(self, model: Model) -> None:
+          if not model.grad:
              loss = Pipeline.LOSSES.get(self._loss, None)
              if not loss:
                 raise InvalidLossError("Invalid loss: {}".format(self._loss))
-             self._model.loss = loss(self._model.y, self._model.y_hat)
+             model.loss = loss(model.y, model.y_hat)
              optimizer = Pipeline.OPTIMIZERS.get(self._optimizer, None)
              if not optimizer:
                 raise InvalidOptimizerError("Invalid optimizer: {}".format(self._optimizer))
-             self._model.grad = optimizer(learning_rate=self._lr).minimize(self._model.loss)
+             model.grad = optimizer(learning_rate=self._lr).minimize(model.loss)
 
-      def _check_evaluation_metrics(self) -> None:
+      def _check_evaluation_metrics(self, model: Model) -> None:
           def generate_evaluation_ops(metrics):
               ops = list()
               for metric in metrics:
@@ -153,12 +153,12 @@ class Pipeline:
                      raise InvalidMetricError("Invalid evaluation metric: {}".format(metric))
                   ops.append(Pipeline.EVALUATION_METRICS[metric](self._model.y, self._model.y_hat))
               return ops
-          if not self._model.evaluation_ops_train and not self._model.evaluation_ops_test:
+          if not model.evaluation_ops_train and not model.evaluation_ops_test:
              if self._evaluation_metrics:
                 train_ops = generate_evaluation_ops(self._evaluation_metrics.get("TRAIN", []))
-                self._model.evaluation_ops_train = train_ops
+                model.evaluation_ops_train = train_ops
                 test_ops = generate_evaluation_ops(self._evaluation_metrics.get("TEST", []))
-                self._model.evaluation_ops_test = test_ops
+                model.evaluation_ops_test = test_ops
 
       def _get_config(self) -> tf.ConfigProto:
           config = tf.ConfigProto()
