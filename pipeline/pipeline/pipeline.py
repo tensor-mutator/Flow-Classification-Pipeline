@@ -7,7 +7,8 @@ from tqdm import tqdm
 from typing import Dict, List
 from .model import Model
 from .exceptions import *
-from .metrics import MicroPrecision, MicroRecall, MacroPrecision, MicroF1Score, MacroRecall, MacroF1Score, HammingLoss
+from .metrics import (MicroPrecision, MicroRecall, MacroPrecision, MicroF1Score, MacroRecall,
+                      MacroF1Score, HammingLoss, TP, FP, TN, FN)
 from .losses import bp_mll
 
 GREEN = "\033[32m"
@@ -26,7 +27,7 @@ class Pipeline:
 
       EVALUATION_METRICS: Dict = {"micro_precision": MicroPrecision, "micro_recall": MicroRecall, "micro_f1_score": MicroF1Score,
                                   "macro_precision": MacroPrecision, "macro_recall": MacroRecall, "macro_f1_score": MacroF1Score,
-                                  "hamming_loss": HammingLoss}
+                                  "hamming_loss": HammingLoss, "tp": TP, "fp": FP, "tn": TN, "fn": FN}
 
       def __init__(self, model: Model, batch_size: int, n_epoch: int, loss: str = None,
                    optimizer: str = None, lr: float = None, evaluation_metrics: List = None) -> None:
