@@ -27,7 +27,10 @@ class Pipeline:
 
       EVALUATION_METRICS: Dict = {"MicroPrecision": MicroPrecision, "MicroRecall": MicroRecall, "MicroF1Score": MicroF1Score,
                                   "MacroPrecision": MacroPrecision, "MacroRecall": MacroRecall, "MacroF1Score": MacroF1Score,
-                                  "HammingLoss": HammingLoss, "TP": TP, "FP": FP, "TN": TN, "FN": FN}
+                                  "HammingLoss": HammingLoss, "TPMacro": TP, "FPMacro": FP, "TNMacro": TN, "FNMacro": FN,
+                                  "TPMicro": lambda y, y_hat: TP(y, y_hat, type="micro"), "FPMicro": lambda y, y_hat: FP(y, y_hat, type="micro"),
+                                  "TNMicro": lambda y, y_hat: TN(y, y_hat, type="micro"), "FNMicro": lambda y, y_hat: FN(y, y_hat, type="micro"),
+                                 }
 
       def __init__(self, model: Model, batch_size: int, n_epoch: int, loss: str = None,
                    optimizer: str = None, lr: float = None, evaluation_metrics: List = None) -> None:
