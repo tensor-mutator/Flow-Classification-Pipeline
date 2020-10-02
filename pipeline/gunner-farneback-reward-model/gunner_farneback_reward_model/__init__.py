@@ -45,6 +45,10 @@ class GunnerFarnebackRewardModel(Model):
       def evaluation_ops(self) -> List[tf.Tensor]:
           return None
  
+      @evaluation_ops.setter
+      def evaluation_ops(self, evaluation_ops: List[tf.Tensor]) -> None:
+          self._evaluation_ops = evaluation_ops
+
 def main():
     pipeline = Pipeline(GunnerFarnebackRewardModel, batch_size=32, n_epoch=1000, evaluation_metrics=["macro_precision", "macro_recall",
                                                                                                      "macro_f1_score", "hamming_loss"])
