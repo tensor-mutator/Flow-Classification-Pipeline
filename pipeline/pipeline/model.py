@@ -10,7 +10,7 @@ tf.logging.set_verbosity(tf.logging.ERROR)
 class Model(metaclass=ABCMeta):
 
       @abstractmethod
-      def __init__(self, X: tf.Tensor, y: tf.Tensor) -> None:
+      def __init__(self, X: tf.Tensor, y: tf.Tensor = None) -> None:
           ...
 
       @property
