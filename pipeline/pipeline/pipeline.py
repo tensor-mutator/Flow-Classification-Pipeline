@@ -76,13 +76,14 @@ class Pipeline:
       def fit(self, X_train: np.ndarray, X_test: np.ndarray,
               y_train: np.ndarray, y_test: np.ndarray) -> None:
           def run_(session, total_loss, total_accuracy) -> List:
-              _, loss = session.run([self._model.grad, self._model.loss])
-              accuracy_scores = session.run(self._model.evaluation_ops)
+              _, loss, accuracy_scores = session.run([self._model.grad, self._model.loss, self._model.evaluation_ops])
               total_loss += loss
               total_accuracy = list(map(lambda x, y: x+y, accuracy_scores, total_accuracy))
               return total_loss, total_accuracy
           config = tf.ConfigProto()
           config.gpu_options.allow_growth = True
+          n_batches_train = np.ceil(np.size(y_train, axis=0)/self._batch_size)
+          n_batches_test = np.ceil(np.size(y_test, axis=0)/self._batch_size)
           self._session = session = tf.Session(config=config)
           with session.graph.as_default():
                session.run(tf.global_variables_initializer())
@@ -111,11 +112,11 @@ class Pipeline:
                    print(f"\tTraining set:")
                    print(f"\t\tLoss: {GREEN}{train_loss/len(y_train)}{DEFAULT}")
                    for metric, accuracy in zip(self._evaluation_metrics, train_accuracy):
-                       print(f"\t\t{metric}: {GREEN}{accuracy/len(y_train)}{DEFAULT}")
+                       print(f"\t\t{metric}: {GREEN}{accuracy/n_batches_train}{DEFAULT}")
                    print(f"\tTest set:")
                    print(f"\t\tLoss: {MAGENTA}{test_loss/len(y_test)}{DEFAULT}")
                    for metric, accuracy in zip(self._evaluation_metrics, test_accuracy):
-                       print(f"\t\t{metric}: {MAGENTA}{accuracy/len(y_test)}{DEFAULT}")
+                       print(f"\t\t{metric}: {MAGENTA}{accuracy/n_batches_test}{DEFAULT}")
 
       def __del__(self) -> None:
           self._session.close()
