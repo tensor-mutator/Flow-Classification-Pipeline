@@ -3,7 +3,7 @@ with warnings.catch_warnings():
      warnings.filterwarnings("ignore", category=FutureWarning)
      import tensorflow.compat.v1 as tf
      import tensorflow.compat.v1.keras.layers as layers
-from typing import Tuple
+from typing import Tuple, List
 from pipeline import Pipeline, Model
 import flappy_bird_dataset
 
