@@ -111,11 +111,11 @@ class Pipeline:
                    print(f"\tTraining set:")
                    print(f"\t\tLoss: {GREEN}{train_loss/len(y_train)}{DEFAULT}")
                    for metric, accuracy in zip(self._evaluation_metrics, train_accuracy):
-                       print(f"\t\t\t{metric}: {GREEN}{accuracy/len(y_train)}{DEFAULT}")
+                       print(f"\t\t{metric}: {GREEN}{accuracy/len(y_train)}{DEFAULT}")
                    print(f"\tTest set:")
                    print(f"\t\tLoss: {MAGENTA}{test_loss/len(y_test)}{DEFAULT}")
                    for metric, accuracy in zip(self._evaluation_metrics, test_accuracy):
-                       print(f"\t\t\t{metric}: {MAGENTA}{accuracy/len(y_test)}{DEFAULT}")
+                       print(f"\t\t{metric}: {MAGENTA}{accuracy/len(y_test)}{DEFAULT}")
 
       def __del__(self) -> None:
           self._session.close()
