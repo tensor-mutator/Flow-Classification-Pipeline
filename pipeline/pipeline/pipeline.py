@@ -51,12 +51,18 @@ class Pipeline:
           self._X_placeholder = tf.placeholder(shape=[None] + list(model.shape_X()) + [3], dtype=tf.float32)
           self._y_placeholder = tf.placeholder(shape=[None] + list(model.shape_y()) + [3], dtype=tf.int32)
           self._iterator = self._generate_iterator()
-          self._model = self._get_model(model)
-          self._check_loss()
-          self._check_evaluation_metrics()
-          self._session = self._get_session()
+          self._model = self._generate_local_graph(model)
+          self._predict_model = self._generate_target_graph(model)
+          self._session = tf.Session(config=self._get_config())
           self._model_name = model.__name__
           self._generate_checkpoint_directory()
+
+      def _generate_local_graph(self, model: Model) -> List:
+          with tf.variable_scope("local"):
+               model = self._get_model(model)
+               self._check_loss()
+               self._check_evaluation_metrics()
+           return model
 
       @contextmanager
       def _fit_context(self) -> Generator:
@@ -70,10 +76,11 @@ class Pipeline:
 
       def _load_weights(self) -> None:
           if self._config & config.LOAD_WEIGHTS:
-             self._saver = tf.train.Saver(max_to_keep=5)
-             if glob(os.path.join(self._model_name, "{}.ckpt.*".format(self._model_name))):
-                ckpt = tf.train.get_checkpoint_state(self._model_name)
-                self._saver.restore(self._session, ckpt.model_checkpoint_path)
+             with self._session.graph.as_default():
+                  self._saver = tf.train.Saver(max_to_keep=5)
+                  if glob(os.path.join(self._model_name, "{}.ckpt.*".format(self._model_name))):
+                     ckpt = tf.train.get_checkpoint_state(self._model_name)
+                     self._saver.restore(self._session, ckpt.model_checkpoint_path)
 
       def _generate_summary_writer(self) -> Any:
           summary_cond = config.LOSS_EVENT+config.HAMMING_LOSS_EVENT+config.MACRO_PRECISION_EVENT+config.MACRO_RECALL_EVENT
@@ -86,10 +93,21 @@ class Pipeline:
              return train_writer, test_writer
           return None, None
 
+      @property
+      def _update_ops(self) -> tf.group:
+          trainable_vars_local = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope="local")
+          trainable_vars_target = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope="target")
+          update_ops = list()
+          for from_ ,to_ in zip(trainable_vars_local, trainable_vars_target):
+              update_ops.append(to_.assign(from_))
+          return tf.group(update_ops)
+
       def _save_weights(self) -> None:
           if self._config & config.SAVE_WEIGHTS:
              if getattr(self, "_saver", None) is None:
-                self._saver = tf.train.Saver(max_to_keep=5)
+                with self._session.graph.as_default():
+                     self._saver = tf.train.Saver(max_to_keep=5)
+             self._session.run(self._update_ops)
              self._saver.save(self._session, os.path.join(self._model_name, "{}.ckpt".format(self._model_name)))
 
       def _generate_checkpoint_directory(self) -> None:
@@ -109,6 +127,12 @@ class Pipeline:
       def _get_model(self, model: Model) -> Model:
           X_, y_ = self._iterator.get_next()
           return model(X_, y_)
+
+     def _generate_target_graph(self, model: Model) -> List:
+         with tf.variable_scope("target"):
+              self._X_predict = tf.placeholder(shape=[None] + list(model.shape_X()) + [3], dtype=tf.float32)
+              model = model(self._X_predict, None)
+         return model
 
       def _check_loss(self) -> None:
           if not self._model.grad:
@@ -136,10 +160,10 @@ class Pipeline:
                 test_ops = generate_evaluation_ops(self._evaluation_metrics.get("TEST", []))
                 self._model.evaluation_ops_test = test_ops
 
-      def _get_session(self) -> tf.Session:
+      def _get_config(self) -> tf.ConfigProto:
           config = tf.ConfigProto()
           config.gpu_options.allow_growth = True
-          return tf.Session(config=config)
+          return config
 
       def _save_summary(self, writer: tf.summary.FileWriter, epoch: int, loss: float, metrics: zip) -> None:
           summary = tf.Summary()
@@ -233,6 +257,10 @@ class Pipeline:
               y_train: np.ndarray, y_test: np.ndarray) -> None:
           with self._fit_context() as [session, train_writer, test_writer]:
                self._fit(X_train, X_test, y_train, y_test, session, train_writer, test_writer)
+
+      def predict(self, X: np.ndarray) -> np.ndarray:
+          with self._session.graph.as_default():
+               return self._session.run(self._predict_model.y_hat, feed_dict={self._X_predict: X})
 
       def __del__(self) -> None:
           self._session.close()
