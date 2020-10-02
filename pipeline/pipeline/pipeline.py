@@ -226,10 +226,10 @@ class Pipeline:
                    self._save_summary(test_writer, epoch=epoch+1, loss=loss, metrics=zip(self._evaluation_metrics.get("TEST", []),
                                                                                          test_score))
 
-       def fit(self, X_train: np.ndarray, X_test: np.ndarray,
-               y_train: np.ndarray, y_test: np.ndarray) -> None:
-           with self._fit_context() as session, train_writer, test_writer:
-                _fit(X_train, X_test, y_train, y_test, session, train_writer, test_writer)
+      def fit(self, X_train: np.ndarray, X_test: np.ndarray,
+              y_train: np.ndarray, y_test: np.ndarray) -> None:
+          with self._fit_context() as session, train_writer, test_writer:
+               _fit(X_train, X_test, y_train, y_test, session, train_writer, test_writer)
 
       def __del__(self) -> None:
           self._session.close()
