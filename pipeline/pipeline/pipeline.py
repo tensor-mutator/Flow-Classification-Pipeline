@@ -78,8 +78,11 @@ class Pipeline:
 
       def fit(self, X_train: np.ndarray, X_test: np.ndarray,
               y_train: np.ndarray, y_test: np.ndarray) -> None:
-          def run_(session, total_loss, total_accuracy) -> List:
-              _, loss, accuracy_scores = session.run([self._model.grad, self._model.loss, self._model.evaluation_ops])
+          def run_(session, total_loss, total_accuracy, train=True) -> List:
+              if train:
+                 _, loss, accuracy_scores = session.run([self._model.grad, self._model.loss, self._model.evaluation_ops])
+              else:
+                 loss, accuracy_scores = session.run([self._model.loss, self._model.evaluation_ops])
               total_loss += loss
               total_accuracy = list(map(lambda x, y: x+y, accuracy_scores, total_accuracy))
               return total_loss, total_accuracy
@@ -107,7 +110,7 @@ class Pipeline:
                    #with tqdm(total=len(y_test)) as progress:
                    try:
                       while True:
-                            test_loss, test_accuracy = run_(session, test_loss, test_accuracy)
+                            test_loss, test_accuracy = run_(session, test_loss, test_accuracy, train=False)
                                  #progress.update(self._batch_size)
                    except tf.errors.OutOfRangeError:
                       ...
