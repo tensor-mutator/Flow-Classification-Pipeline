@@ -75,12 +75,13 @@ class Pipeline:
                      raise InvalidMetricError("Invalid evaluation metric: {}".format(metric))
                   ops.append(Pipeline.EVALUATION_METRICS[metric](self._model.y, self._model.y_hat))
               return ops
-          if not self._model.evaluation_ops_train and not self._model_evaluation_ops_test:
+          if not self._model.evaluation_ops_train and not self._model.evaluation_ops_test:
              if self._evaluation_metrics:
-                ops = generate_avaluation_ops(self._evaluation_metrics.get("TRAIN", []))
+                ops = generate_evaluation_ops(self._evaluation_metrics.get("TRAIN", []))
                 self._model.evaluation_ops_train = ops
                 test_ops = list(set.difference(set(self._evaluation_metrics.get("TEST", [])), set(self._evaluation_metrics.get("TRAIN", []))))
-                ops = generate_avaluation_ops(test_ops)
+                ops = generate_evaluation_ops(test_ops)
+                self._model.evaluation_ops_test = ops
 
       def fit(self, X_train: np.ndarray, X_test: np.ndarray,
               y_train: np.ndarray, y_test: np.ndarray) -> None:
