@@ -151,7 +151,7 @@ class Pipeline:
               for metric in metrics:
                   if not Pipeline.EVALUATION_METRICS.get(metric, None):
                      raise InvalidMetricError("Invalid evaluation metric: {}".format(metric))
-                  ops.append(Pipeline.EVALUATION_METRICS[metric](self._model.y, self._model.y_hat))
+                  ops.append(Pipeline.EVALUATION_METRICS[metric](model.y, model.y_hat))
               return ops
           if not model.evaluation_ops_train and not model.evaluation_ops_test:
              if self._evaluation_metrics:
