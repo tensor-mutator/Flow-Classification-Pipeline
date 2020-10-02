@@ -9,7 +9,7 @@ import flappy_bird_dataset
 
 class GunnerFarnebackRewardModel(Model):
 
-      def __init__(self, X: tf.Tensor, y: tf.Tensor) -> None:
+      def __init__(self, X: tf.Tensor, y: tf.Tensor = None) -> None:
           self._X = X
           self._y = y
           self._evaluation_ops_train = None
