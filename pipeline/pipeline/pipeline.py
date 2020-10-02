@@ -74,7 +74,7 @@ class Pipeline:
               accuracy_scores = session.run(self._model.evaluation_ops)
               total_loss += loss
               total_accuracy = list(map(lambda x, y: x+y, accuracy_scores, total_accuracy))
-              total_loss, total_accuracy
+              return total_loss, total_accuracy
           config = tf.ConfigProto()
           config.gpu_options.allow_growth = True
           self._session = session = tf.Session(config=config)
