@@ -50,7 +50,7 @@ class GunnerFarnebackRewardModel(Model):
           self._evaluation_ops = evaluation_ops
 
 def main():
-    pipeline = Pipeline(GunnerFarnebackRewardModel, batch_size=32, n_epoch=1000, evaluation_metrics=["macro_precision", "macro_recall",
-                                                                                                     "macro_f1_score", "hamming_loss"])
+    pipeline = Pipeline(GunnerFarnebackRewardModel, batch_size=32, n_epoch=1000, evaluation_metrics=["MacroPrecision", "MacroRecall",
+                                                                                                     "MacroF1Score", "HammingLoss"])
     X_train, X_test, y_train, y_test = flappy_bird_dataset.load_flow(resolution=(64, 64), datapoints_per_class=2500)
     pipeline.fit(X_train, X_test, y_train, y_test)
