@@ -10,6 +10,11 @@ from .exceptions import *
 from .metrics import MicroPrecision, MicroRecall, MacroPrecision, MicroF1Score, MacroRecall, MacroF1Score, HammingLoss
 from .losses import bp_mll
 
+GREEN = "\033[32m"
+MAGENTA = "\033[35m"
+CYAN = "\033[36m"
+DEFAULT = "\033[0m"
+
 class Pipeline:
 
       LOSSES: Dict = {"bp_mll": bp_mll, "huber_loss": tf.losses.huber_loss, "log_loss": tf.losses.log_loss,
@@ -91,7 +96,7 @@ class Pipeline:
                                  train_loss, train_accuracy = run_(session, train_loss, train_accuracy)
                                  progress.update(self._batch_size)
                         except tf.errors.OutOfRangeError:
-                           continue
+                           ...
                    session.run(self._iterator.initializer, feed_dict={self._X_placeholder: X_test,
                                                                       self._y_placeholder: y_test})
                    with tqdm(total=len(y_test)) as progress:
@@ -100,16 +105,16 @@ class Pipeline:
                                  test_loss, test_accuracy = run_(session, test_loss, test_accuracy)
                                  progress.update(self._batch_size)
                         except tf.errors.OutOfRangeError:
-                           continue
-                   print(f"\nepoch: \033[36m{epoch+1}\033[0m")
+                           ...
+                   print(f"\nepoch: {CYAN}{epoch+1}{DEFAULT}")
                    print(f"\ttraining set:")
-                   print(f"\t\tloss: \033[32m{train_loss/len(y_train)}\033[0m")
+                   print(f"\t\tloss: {GREEN}{train_loss/len(y_train)}{DEFAULT}")
                    for metric, accuracy in zip(self._evaluation_metrics, train_accuracy):
-                       print(f"\t\t\t{metric}: \033[32m{accuracy/len(y_train)}\033[0m")
+                       print(f"\t\t\t{metric}: {GREEN}{accuracy/len(y_train)}{DEFAULT}")
                    print(f"\ttest set:")
-                   print(f"\t\tloss: \033[35m{test_loss/len(y_test)}\033[0m")
+                   print(f"\t\tloss: {MAGENTA}{test_loss/len(y_test)}{DEFAULT}")
                    for metric, accuracy in zip(self._evaluation_metrics, test_accuracy):
-                       print(f"\t\t\t{metric}: \033[32m{accuracy/len(y_test)}\033[0m")
+                       print(f"\t\t\t{metric}: {MAGENTA}{accuracy/len(y_test)}{DEFAULT}")
 
       def __del__(self) -> None:
           self._session.close()
