@@ -40,7 +40,7 @@ class Pipeline:
 
       def _generate_iterator(self) -> tf.data.Iterator:
           dataset = tf.data.Dataset.from_tensor_slices((self._X_placeholder, self._y_placeholder))
-          dataset = dataset.shuffle(tf.shape(self._X_placeholder)[0]).batch(self._batch_size)
+          dataset = dataset.shuffle(tf.cast(tf.shape(self._X_placeholder)[0], tf.int64)).batch(self._batch_size)
           return dataset.make_initializable_iterator()
 
       def _get_model(self, model: Model) -> Model:
