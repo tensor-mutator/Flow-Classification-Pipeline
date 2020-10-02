@@ -77,11 +77,10 @@ class Pipeline:
               return ops
           if not self._model.evaluation_ops_train and not self._model.evaluation_ops_test:
              if self._evaluation_metrics:
-                ops = generate_evaluation_ops(self._evaluation_metrics.get("TRAIN", []))
-                self._model.evaluation_ops_train = ops
-                test_ops = list(set.difference(set(self._evaluation_metrics.get("TEST", [])), set(self._evaluation_metrics.get("TRAIN", []))))
-                ops = generate_evaluation_ops(test_ops)
-                self._model.evaluation_ops_test = ops
+                train_ops = generate_evaluation_ops(self._evaluation_metrics.get("TRAIN", []))
+                self._model.evaluation_ops_train = train_ops
+                test_ops = generate_evaluation_ops(self._evaluation_metrics.get("TEST", []))
+                self._model.evaluation_ops_test = test_ops
 
       def fit(self, X_train: np.ndarray, X_test: np.ndarray,
               y_train: np.ndarray, y_test: np.ndarray) -> None:
