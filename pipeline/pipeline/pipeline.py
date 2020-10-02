@@ -146,6 +146,8 @@ class Pipeline:
           if self._config & config.LOSS_EVENT:
              summary.value.add(tag="{} Performance/Epoch - Loss".format(self._model_name), simple_value=loss)
           for metric, score in metrics:
+              if metric == "HammingLoss" and self._config & config.HAMMING_LOSS_EVENT:
+                 summary.value.add(tag="{} Performance/Epoch - HammingLoss".format(self._model_name), simple_value=loss)
               if metric == "MicroPrecision" and self._config & config.MICRO_PRECISION_EVENT:
                  summary.value.add(tag="{} Performance/Epoch - MicroPrecision".format(self._model_name), simple_value=score)
               if metric == "MicroRecall" and self._config & config.MICRO_RECALL_EVENT:
