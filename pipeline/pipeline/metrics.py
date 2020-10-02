@@ -67,4 +67,4 @@ def MacroF1Score(y: tf.Tensor, y_hat: tf.Tensor) -> tf.Tensor:
     return 2*MacroPR*MacroRC/(MacroPR+MacroRC)
 
 def HammingLoss(y: tf.Tensor, y_hat: tf.Tensor) -> tf.Tensor:
-    return tf.cast(tf.equal(tf.cast(y, tf.float32), y_hat), tf.float32)/tf.reduce_sum(tf.ones_like(y_hat))
+    return tf.reduce_sum(tf.cast(tf.equal(tf.cast(y, tf.float32), y_hat), tf.float32))/tf.reduce_sum(tf.ones_like(y_hat))
