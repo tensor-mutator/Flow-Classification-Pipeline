@@ -4,7 +4,7 @@ with warnings.catch_warnings():
      import tensorflow.compat.v1 as tf
      import tensorflow.compat.v1.keras.layers as layers
 from typing import Tuple, List
-from pipeline import Pipeline, Model
+from pipeline import Pipeline, Model, config
 import flappy_bird_dataset
 
 class GunnerFarnebackRewardModel(Model):
@@ -59,13 +59,13 @@ class GunnerFarnebackRewardModel(Model):
           self._evaluation_ops_test = evaluation_ops
 
 def main():
-    pipeline = Pipeline(GunnerFarnebackRewardModel, batch_size=32, n_epoch=1000, evaluation_metrics=dict(TRAIN=["MacroPrecision",
-                                                                                                                "MacroRecall",
-                                                                                                                "MacroF1Score",
-                                                                                                                "HammingLoss"],
-                                                                                                         TEST=["MacroPrecision",
-                                                                                                               "MacroRecall",
-                                                                                                               "MacroF1Score",
-                                                                                                               "HammingLoss"]))
+    pipeline = Pipeline(GunnerFarnebackRewardModel, batch_size=32, n_epoch=1000, config=config.SAVE_WEIGHTS, evaluation_metrics=dict(TRAIN=["MacroPrecision",
+                                                                                                                                            "MacroRecall",
+                                                                                                                                            "MacroF1Score",
+                                                                                                                                            "HammingLoss"],
+                                                                                                                                     TEST=["MacroPrecision",
+                                                                                                                                           "MacroRecall",
+                                                                                                                                           "MacroF1Score",
+                                                                                                                                           "HammingLoss"]))
     X_train, X_test, y_train, y_test = flappy_bird_dataset.load_flow(resolution=(64, 64), datapoints_per_class=2500)
     pipeline.fit(X_train, X_test, y_train, y_test)
