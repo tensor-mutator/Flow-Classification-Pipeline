@@ -217,14 +217,14 @@ class Pipeline:
                    print(f"\t\tLoss: {GREEN}{train_loss/n_batches_train}{DEFAULT}")
                    for metric, score in zip(self._evaluation_metrics.get("TRAIN", []), train_score):
                        print(f"\t\t{metric}: {GREEN}{score/n_batches_train}{DEFAULT}")
-                   self._save_summary(train_writer, epoch=epoch+1, loss=loss, metrics=zip(self._evaluation_metrics.get("TRAIN", []),
-                                                                                          train_score))
+                   self._save_summary(train_writer, epoch=epoch+1, loss=train_loss/n_batches_train,
+                                      metrics=zip(self._evaluation_metrics.get("TRAIN", []), train_score))
                    print(f"\n\tTest set:")
                    print(f"\t\tLoss: {MAGENTA}{test_loss/n_batches_test}{DEFAULT}")
                    for metric, score in zip(self._evaluation_metrics.get("TEST", []), test_score):
                        print(f"\t\t{metric}: {MAGENTA}{score/n_batches_test}{DEFAULT}")
-                   self._save_summary(test_writer, epoch=epoch+1, loss=loss, metrics=zip(self._evaluation_metrics.get("TEST", []),
-                                                                                         test_score))
+                   self._save_summary(test_writer, epoch=epoch+1, loss=test_loss/n_batches_test,
+                                      metrics=zip(self._evaluation_metrics.get("TEST", []), test_score))
 
       def fit(self, X_train: np.ndarray, X_test: np.ndarray,
               y_train: np.ndarray, y_test: np.ndarray) -> None:
