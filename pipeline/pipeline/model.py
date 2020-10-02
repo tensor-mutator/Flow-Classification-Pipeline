@@ -39,12 +39,22 @@ class Model(metaclass=ABCMeta):
 
       @property
       @abstractmethod
-      def evaluation_ops(self) -> List[tf.Tensor]:
+      def evaluation_ops_train(self) -> List[tf.Tensor]:
           ...
 
-      @evaluation_ops.setter
+      @evaluation_ops_train.setter
       @abstractmethod
-      def evaluation_ops(self, evaluation_ops: List[tf.Tensor]) -> None:
+      def evaluation_ops_test(self, evaluation_ops: List[tf.Tensor]) -> None:
+          ...
+
+      @property
+      @abstractmethod
+      def evaluation_ops_test(self) -> List[tf.Tensor]:
+          ...
+
+      @evaluation_ops_test.setter
+      @abstractmethod
+      def evaluation_ops_test(self, evaluation_ops: List[tf.Tensor]) -> None:
           ...
 
       @staticmethod
