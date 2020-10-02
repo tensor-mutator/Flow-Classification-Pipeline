@@ -12,7 +12,8 @@ class GunnerFarnebackRewardModel(Model):
       def __init__(self, X: tf.Tensor, y: tf.Tensor) -> None:
           self._X = X
           self._y = y
-          self._evaluation_ops = None
+          self._evaluation_ops_train = None
+          self._evaluation_ops_test = None
           self._build_graph()
 
       @staticmethod
@@ -42,15 +43,29 @@ class GunnerFarnebackRewardModel(Model):
           self._grad = optimizer.minimize(self._loss)
 
       @property
-      def evaluation_ops(self) -> List[tf.Tensor]:
-          return self._evaluation_ops
+      def evaluation_ops_train(self) -> List[tf.Tensor]:
+          return self._evaluation_ops_train
  
-      @evaluation_ops.setter
-      def evaluation_ops(self, evaluation_ops: List[tf.Tensor]) -> None:
-          self._evaluation_ops = evaluation_ops
+      @evaluation_ops_train.setter
+      def evaluation_ops_train(self, evaluation_ops: List[tf.Tensor]) -> None:
+          self._evaluation_ops_train = evaluation_ops
+
+      @property
+      def evaluation_ops_test(self) -> List[tf.Tensor]:
+          return self._evaluation_ops_test
+ 
+      @evaluation_ops_test.setter
+      def evaluation_ops_test(self, evaluation_ops: List[tf.Tensor]) -> None:
+          self._evaluation_ops_test = evaluation_ops
 
 def main():
-    pipeline = Pipeline(GunnerFarnebackRewardModel, batch_size=32, n_epoch=1000, evaluation_metrics=["MacroPrecision", "MacroRecall",
-                                                                                                     "MacroF1Score", "HammingLoss"])
+    pipeline = Pipeline(GunnerFarnebackRewardModel, batch_size=32, n_epoch=1000, evaluation_metrics=dict(TRAIN=["MacroPrecision",
+                                                                                                                "MacroRecall",
+                                                                                                                "MacroF1Score",
+                                                                                                                "HammingLoss"],
+                                                                                                         TEST=["MacroPrecision",
+                                                                                                               "MacroRecall",
+                                                                                                               "MacroF1Score",
+                                                                                                               "HammingLoss"]))
     X_train, X_test, y_train, y_test = flappy_bird_dataset.load_flow(resolution=(64, 64), datapoints_per_class=2500)
     pipeline.fit(X_train, X_test, y_train, y_test)
