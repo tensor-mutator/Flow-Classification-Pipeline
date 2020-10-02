@@ -62,7 +62,7 @@ class Pipeline:
                model = self._get_model(model)
                self._check_loss()
                self._check_evaluation_metrics()
-           return model
+               return model
 
       @contextmanager
       def _fit_context(self) -> Generator:
