@@ -85,7 +85,7 @@ class Pipeline:
                    test_loss, test_accuracy = 0, [0 for _ in range(len(self._evaluation_metrics))]
                    session.run(self._iterator.initializer, feed_dict={self._X_placeholder: X_train,
                                                                       self._y_placeholder: y_train})
-                   with tdqm(total=len(y_train)) as progress:
+                   with tqdm(total=len(y_train)) as progress:
                         try:
                            while True:
                                  train_loss, train_accuracy = run_(session, train_loss, train_accuracy)
@@ -94,7 +94,7 @@ class Pipeline:
                            continue
                    session.run(self._iterator.initializer, feed_dict={self._X_placeholder: X_test,
                                                                       self._y_placeholder: y_test})
-                   with tdqm(total=len(y_test)) as progress:
+                   with tqdm(total=len(y_test)) as progress:
                         try:
                            while True:
                                  test_loss, test_accuracy = run_(session, test_loss, test_accuracy)
