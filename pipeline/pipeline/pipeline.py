@@ -15,6 +15,8 @@ GREEN = "\033[32m"
 MAGENTA = "\033[35m"
 CYAN = "\033[36m"
 DEFAULT = "\033[0m"
+WIPE = "\033[2K"
+UP = "\033[2A"
 
 class Pipeline:
 
@@ -104,23 +106,23 @@ class Pipeline:
                    test_loss, test_accuracy = 0, [0 for _ in range(len(self._evaluation_metrics.get("TEST", [])))]
                    session.run(self._iterator.initializer, feed_dict={self._X_placeholder: X_train,
                                                                       self._y_placeholder: y_train})
-                   #with tqdm(total=len(y_train)) as progress:
-                   try:
-                      while True:
-                            train_loss, train_accuracy = run_(session, train_loss, train_accuracy)
-                                 #progress.update(self._batch_size)
-                   except tf.errors.OutOfRangeError:
-                      ...
+                   with tqdm(total=len(y_train)) as progress:
+                        try:
+                           while True:
+                                 train_loss, train_accuracy = run_(session, train_loss, train_accuracy)
+                                 progress.update(self._batch_size)
+                        except tf.errors.OutOfRangeError:
+                           ...
                    session.run(self._iterator.initializer, feed_dict={self._X_placeholder: X_test,
                                                                       self._y_placeholder: y_test})
-                   #with tqdm(total=len(y_test)) as progress:
-                   try:
-                      while True:
-                            test_loss, test_accuracy = run_(session, test_loss, test_accuracy, train=False)
-                                 #progress.update(self._batch_size)
-                   except tf.errors.OutOfRangeError:
-                      ...
-                   print(f"\nEPOCH: {CYAN}{epoch+1}{DEFAULT}")
+                   with tqdm(total=len(y_test)) as progress:
+                        try:
+                           while True:
+                                 test_loss, test_accuracy = run_(session, test_loss, test_accuracy, train=False)
+                                 progress.update(self._batch_size)
+                        except tf.errors.OutOfRangeError:
+                           ...
+                   print(f"{UP}\r{WIPE}\n{WIPE}EPOCH: {CYAN}{epoch+1}{DEFAULT}")
                    print(f"\tTraining set:")
                    print(f"\t\tLoss: {GREEN}{train_loss/len(y_train)}{DEFAULT}")
                    for metric, accuracy in zip(self._evaluation_metrics.get("TRAIN", []), train_accuracy):
