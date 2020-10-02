@@ -30,7 +30,8 @@ def _map_rewards(reward) -> int:
 
 def _get_y(data) -> np.ndarray:
     y_rewards = map(lambda x: x["reward"], data)
-    return np.array(list(map(_map_rewards, y_rewards)))
+    y_labels = np.array(list(map(_map_rewards, y_rewards)))
+    return _one_hot_y(y_labels)
 
 def _get_X(data, resolution: Tuple, flow: bool = False) -> np.ndarray:
     if flow:
