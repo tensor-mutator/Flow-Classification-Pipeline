@@ -55,7 +55,7 @@ class Pipeline:
           self._check_loss()
           self._check_evaluation_metrics()
           self._session = self._get_session()
-          self._checkpoint_path = model.__name__
+          self._model_name = model.__name__
           self._generate_checkpoint_directory()
 
       @contextmanager
@@ -71,8 +71,8 @@ class Pipeline:
       def _load_weights(self) -> None:
           if self._config & config.LOAD_WEIGHTS:
              self._saver = tf.train.Saver(max_to_keep=5)
-             if glob(os.path.join(self._checkpoint_path, "{}.ckpt.*".format(self._checkpoint_path))):
-                ckpt = tf.train.get_checkpoint_state(self._checkpoint_path)
+             if glob(os.path.join(self._model_name, "{}.ckpt.*".format(self._model_name))):
+                ckpt = tf.train.get_checkpoint_state(self._model_name)
                 self._saver.restore(self._session, ckpt.model_checkpoint_path)
 
       def _generate_summary_writer(self) -> Any:
@@ -81,8 +81,8 @@ class Pipeline:
           summary_cond += config.MACRO_TP_EVENT+config.MACRO_FP_EVENT+config.MACRO_TN_EVENT+config.MACRO_FN_EVENT
           summary_cond += config.MICRO_TP_EVENT+config.MICRO_FP_EVENT+config.MICRO_TN_EVENT+config.MICRO_FN_EVENT
           if self._config & summary_cond:
-             train_writer = tf.summary.FileWriter(os.path.join(self._checkpoint_path, "{} TRAIN EVENT".format(self._checkpoint_path)), self._session.graph)
-             test_writer = tf.summary.FileWriter(os.path.join(self._checkpoint_path, "{} TEST EVENT".format(self._checkpoint_path)), self._session.graph)
+             train_writer = tf.summary.FileWriter(os.path.join(self._model_name, "{} TRAIN EVENT".format(self._model_name)), self._session.graph)
+             test_writer = tf.summary.FileWriter(os.path.join(self._model_name, "{} TEST EVENT".format(self._model_name)), self._session.graph)
              return train_writer, test_writer
           return None, None
 
@@ -90,7 +90,7 @@ class Pipeline:
           if self._config & config.SAVE_WEIGHTS:
              if getattr(self, "_saver", None) is None:
                 self._saver = tf.train.Saver(max_to_keep=5)
-             self._saver.save(self._session, os.path.join(self._checkpoint_path, "{}.ckpt".format(self._checkpoint_path)))
+             self._saver.save(self._session, os.path.join(self._model_name, "{}.ckpt".format(self._model_name)))
 
       def _generate_checkpoint_directory(self) -> None:
           checkpoint_directory_cond = config.SAVE_WEIGHTS+config.LOSS_EVENT+config.HAMMING_LOSS_EVENT+config.MACRO_PRECISION_EVENT+config.MACRO_RECALL_EVENT
@@ -98,8 +98,8 @@ class Pipeline:
           checkpoint_directory_cond += config.MACRO_TP_EVENT+config.MACRO_FP_EVENT+config.MACRO_TN_EVENT+config.MACRO_FN_EVENT
           checkpoint_directory_cond += config.MICRO_TP_EVENT+config.MICRO_FP_EVENT+config.MICRO_TN_EVENT+config.MICRO_FN_EVENT
           if self._config & checkpoint_directory_cond:
-             if not os.path.exists(self._checkpoint_path):
-                os.mkdir(self._checkpoint_path)
+             if not os.path.exists(self._model_name):
+                os.mkdir(self._model_name)
 
       def _generate_iterator(self) -> tf.data.Iterator:
           dataset = tf.data.Dataset.from_tensor_slices((self._X_placeholder, self._y_placeholder))
@@ -142,6 +142,39 @@ class Pipeline:
           return tf.Session(config=config)
 
       def _save_summary(writer: tf.summary.FileWriter, epoch, loss, metrics) -> None:
+          summary = tf.Summary()
+          if self._config & config.LOSS_EVENT:
+             summary.value.add(tag="{} Performance/Epoch - Loss".format(self._model_name), simple_value=loss)
+          for metric, score in metrics:
+              if metric == "MicroPrecision" and self._config & config.MICRO_PRECISION_EVENT:
+                 summary.value.add(tag="{} Performance/Epoch - MicroPrecision".format(self._model_name), simple_value=score)
+              if metric == "MicroRecall" and self._config & config.MICRO_RECALL_EVENT:
+                 summary.value.add(tag="{} Performance/Epoch - MicroRecall".format(self._model_name), simple_value=score)
+              if metric == "MicroF1Score" and self._config & config.MICRO_F1_SCORE_EVENT:
+                 summary.value.add(tag="{} Performance/Epoch - MicroF1Score".format(self._model_name), simple_value=score)
+              if metric == "MacroPrecision" and self._config & config.MACRO_PRECISION_EVENT:
+                 summary.value.add(tag="{} Performance/Epoch - MacroPrecision".format(self._model_name), simple_value=score)
+              if metric == "MacroRecall" and self._config & config.MACRO_RECALL_EVENT:
+                 summary.value.add(tag="{} Performance/Epoch - MicroRecall".format(self._model_name), simple_value=score)
+              if metric == "MacroF1Score" and self._config & config.MACRO_F1_SCORE_EVENT:
+                 summary.value.add(tag="{} Performance/Epoch - MacroF1Score".format(self._model_name), simple_value=score)
+              if metric == "MacroTP" and self._config & config.MACRO_TP_EVENT:
+                 summary.value.add(tag="{} Performance/Epoch - MacroTP".format(self._model_name), simple_value=score)
+              if metric == "MacroFP" and self._config & config.MACRO_FP_EVENT:
+                 summary.value.add(tag="{} Performance/Epoch - MacroFP".format(self._model_name), simple_value=score)
+              if metric == "MacroTN" and self._config & config.MACRO_TN_EVENT:
+                 summary.value.add(tag="{} Performance/Epoch - MacroTN".format(self._model_name), simple_value=score)
+              if metric == "MacroFN" and self._config & config.MACRO_FN_EVENT:
+                 summary.value.add(tag="{} Performance/Epoch - MacroFN".format(self._model_name), simple_value=score)
+              if metric == "MicroTP" and self._config & config.MICRO_TP_EVENT:
+                 summary.value.add(tag="{} Performance/Epoch - MicroTP".format(self._model_name), simple_value=score)
+              if metric == "MicroFP" and self._config & config.MICRO_FP_EVENT:
+                 summary.value.add(tag="{} Performance/Epoch - MicroFP".format(self._model_name), simple_value=score)
+              if metric == "MicroTN" and self._config & config.MICRO_TN_EVENT:
+                 summary.value.add(tag="{} Performance/Epoch - MicroTN".format(self._model_name), simple_value=score)
+              if metric == "MicroFN" and self._config & config.MICRO_FN_EVENT:
+                 summary.value.add(tag="{} Performance/Epoch - MicroFN".format(self._model_name), simple_value=score)
+          writer.add_summary(summary, epoch)
 
       def _fit(self, X_train: np.ndarray, X_test: np.ndarray,
                y_train: np.ndarray, y_test: np.ndarray, session: tf.Session,
@@ -159,14 +192,14 @@ class Pipeline:
           with session.graph.as_default():
                session.run(tf.global_variables_initializer())
                for epoch in range(self._n_epoch):
-                   train_loss, train_accuracy = 0, [0 for _ in range(len(self._evaluation_metrics.get("TRAIN", [])))]
-                   test_loss, test_accuracy = 0, [0 for _ in range(len(self._evaluation_metrics.get("TEST", [])))]
+                   train_loss, train_score = 0, [0 for _ in range(len(self._evaluation_metrics.get("TRAIN", [])))]
+                   test_loss, test_score = 0, [0 for _ in range(len(self._evaluation_metrics.get("TEST", [])))]
                    session.run(self._iterator.initializer, feed_dict={self._X_placeholder: X_train,
                                                                       self._y_placeholder: y_train})
                    with tqdm(total=len(y_train)) as progress:
                         try:
                            while True:
-                                 train_loss, train_accuracy = run_(session, train_loss, train_accuracy)
+                                 train_loss, train_score = run_(session, train_loss, train_score)
                                  progress.update(self._batch_size)
                         except tf.errors.OutOfRangeError:
                            ...
@@ -175,23 +208,23 @@ class Pipeline:
                    with tqdm(total=len(y_test)) as progress:
                         try:
                            while True:
-                                 test_loss, test_accuracy = run_(session, test_loss, test_accuracy, train=False)
+                                 test_loss, test_score = run_(session, test_loss, test_score, train=False)
                                  progress.update(self._batch_size)
                         except tf.errors.OutOfRangeError:
                            ...
                    print(f"{UP}\r{WIPE}\n{WIPE}EPOCH: {CYAN}{epoch+1}{DEFAULT}")
                    print(f"\n\tTraining set:")
                    print(f"\t\tLoss: {GREEN}{train_loss/n_batches_train}{DEFAULT}")
-                   for metric, accuracy in zip(self._evaluation_metrics.get("TRAIN", []), train_accuracy):
-                       print(f"\t\t{metric}: {GREEN}{accuracy/n_batches_train}{DEFAULT}")
+                   for metric, score in zip(self._evaluation_metrics.get("TRAIN", []), train_score):
+                       print(f"\t\t{metric}: {GREEN}{score/n_batches_train}{DEFAULT}")
                    self._save_summary(train_writer, epoch=epoch+1, loss=loss, metrics=zip(self._evaluation_metrics.get("TRAIN", []),
-                                                                                          train_accuracy))
+                                                                                          train_score))
                    print(f"\n\tTest set:")
                    print(f"\t\tLoss: {MAGENTA}{test_loss/n_batches_test}{DEFAULT}")
-                   for metric, accuracy in zip(self._evaluation_metrics.get("TEST", []), test_accuracy):
-                       print(f"\t\t{metric}: {MAGENTA}{accuracy/n_batches_test}{DEFAULT}")
+                   for metric, score in zip(self._evaluation_metrics.get("TEST", []), test_score):
+                       print(f"\t\t{metric}: {MAGENTA}{score/n_batches_test}{DEFAULT}")
                    self._save_summary(test_writer, epoch=epoch+1, loss=loss, metrics=zip(self._evaluation_metrics.get("TEST", []),
-                                                                                         test_accuracy))
+                                                                                         test_score))
 
        def fit(self, X_train: np.ndarray, X_test: np.ndarray,
                y_train: np.ndarray, y_test: np.ndarray) -> None:
