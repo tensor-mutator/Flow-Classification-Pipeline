@@ -10,6 +10,7 @@ from .exceptions import *
 from .metrics import (MicroPrecision, MicroRecall, MacroPrecision, MicroF1Score, MacroRecall,
                       MacroF1Score, HammingLoss, TP, FP, TN, FN)
 from .losses import bp_mll
+from .config import config
 
 GREEN = "\033[32m"
 MAGENTA = "\033[35m"
@@ -35,19 +36,22 @@ class Pipeline:
                                  }
 
       def __init__(self, model: Model, batch_size: int, n_epoch: int, loss: str = None,
-                   optimizer: str = None, lr: float = None, evaluation_metrics: List = None) -> None:
+                   optimizer: str = None, lr: float = None, evaluation_metrics: List = None,
+                   config: bin = config.DEFAULT) -> None:
           self._batch_size = batch_size
           self._n_epoch = n_epoch
           self._loss = loss
           self._optimizer = optimizer
           self._lr = lr if lr else 1e-4
           self._evaluation_metrics = evaluation_metrics
+          self._config = config
           self._X_placeholder = tf.placeholder(shape=[None] + list(model.shape_X()) + [3], dtype=tf.float32)
           self._y_placeholder = tf.placeholder(shape=[None] + list(model.shape_y()) + [3], dtype=tf.int32)
           self._iterator = self._generate_iterator()
           self._model = self._get_model(model)
           self._check_loss()
           self._check_evaluation_metrics()
+          self._session = self._get_session()
 
       def _generate_iterator(self) -> tf.data.Iterator:
           dataset = tf.data.Dataset.from_tensor_slices((self._X_placeholder, self._y_placeholder))
@@ -84,6 +88,11 @@ class Pipeline:
                 test_ops = generate_evaluation_ops(self._evaluation_metrics.get("TEST", []))
                 self._model.evaluation_ops_test = test_ops
 
+      def _get_session(self) -> tf.Session:
+          config = tf.ConfigProto()
+          config.gpu_options.allow_growth = True
+          return tf.Session(config=config)
+
       def fit(self, X_train: np.ndarray, X_test: np.ndarray,
               y_train: np.ndarray, y_test: np.ndarray) -> None:
           def run_(session, total_loss, total_accuracy, train=True) -> List:
@@ -94,31 +103,28 @@ class Pipeline:
               total_loss += loss
               total_accuracy = list(map(lambda x, y: x+y, accuracy_scores, total_accuracy))
               return total_loss, total_accuracy
-          config = tf.ConfigProto()
-          config.gpu_options.allow_growth = True
           n_batches_train = np.ceil(np.size(y_train, axis=0)/self._batch_size)
           n_batches_test = np.ceil(np.size(y_test, axis=0)/self._batch_size)
-          self._session = session = tf.Session(config=config)
-          with session.graph.as_default():
-               session.run(tf.global_variables_initializer())
+          with self._session.graph.as_default():
+               self._session.run(tf.global_variables_initializer())
                for epoch in range(self._n_epoch):
                    train_loss, train_accuracy = 0, [0 for _ in range(len(self._evaluation_metrics.get("TRAIN", [])))]
                    test_loss, test_accuracy = 0, [0 for _ in range(len(self._evaluation_metrics.get("TEST", [])))]
-                   session.run(self._iterator.initializer, feed_dict={self._X_placeholder: X_train,
+                   self._session.run(self._iterator.initializer, feed_dict={self._X_placeholder: X_train,
                                                                       self._y_placeholder: y_train})
                    with tqdm(total=len(y_train)) as progress:
                         try:
                            while True:
-                                 train_loss, train_accuracy = run_(session, train_loss, train_accuracy)
+                                 train_loss, train_accuracy = run_(self._session, train_loss, train_accuracy)
                                  progress.update(self._batch_size)
                         except tf.errors.OutOfRangeError:
                            ...
-                   session.run(self._iterator.initializer, feed_dict={self._X_placeholder: X_test,
+                   self._session.run(self._iterator.initializer, feed_dict={self._X_placeholder: X_test,
                                                                       self._y_placeholder: y_test})
                    with tqdm(total=len(y_test)) as progress:
                         try:
                            while True:
-                                 test_loss, test_accuracy = run_(session, test_loss, test_accuracy, train=False)
+                                 test_loss, test_accuracy = run_(self._session, test_loss, test_accuracy, train=False)
                                  progress.update(self._batch_size)
                         except tf.errors.OutOfRangeError:
                            ...
