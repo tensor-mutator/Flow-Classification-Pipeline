@@ -81,8 +81,8 @@ class Pipeline:
           with session.graph.as_default():
                session.run(tf.global_variables_initializer())
                for epoch in range(self._n_epoch):
-                   train_loss, train_accuracy = 0, [0 for _ in range(len(self._model.evaluation_metrics))]
-                   test_loss, test_accuracy = 0, [0 for _ in range(len(self._model.evaluation_metrics))]
+                   train_loss, train_accuracy = 0, [0 for _ in range(len(self._evaluation_metrics))]
+                   test_loss, test_accuracy = 0, [0 for _ in range(len(self._evaluation_metrics))]
                    session.run(self._iterator.initializer, feed_dict={self._X_placeholder: X_train,
                                                                       self._y_placeholder: y_train})
                    with tdqm(total=len(y_train)) as progress:
@@ -104,11 +104,11 @@ class Pipeline:
                    print(f"\nepoch: \033[36m{epoch+1}\033[0m")
                    print(f"\ttraining set:")
                    print(f"\t\tloss: \033[32m{train_loss/len(y_train)}\033[0m")
-                   for metric, accuracy in zip(self._model.evaluation_metrics, train_accuracy):
+                   for metric, accuracy in zip(self._evaluation_metrics, train_accuracy):
                        print(f"\t\t\t{metric}: \033[32m{accuracy/len(y_train)}\033[0m")
                    print(f"\ttest set:")
                    print(f"\t\tloss: \033[35m{test_loss/len(y_test)}\033[0m")
-                   for metric, accuracy in zip(self._model.evaluation_metrics, test_accuracy):
+                   for metric, accuracy in zip(self._evaluation_metrics, test_accuracy):
                        print(f"\t\t\t{metric}: \033[32m{accuracy/len(y_test)}\033[0m")
 
       def __del__(self) -> None:
