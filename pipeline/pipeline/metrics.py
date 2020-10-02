@@ -79,4 +79,4 @@ def MacroF1Score(y: tf.Tensor, y_hat: tf.Tensor) -> tf.Tensor:
 def HammingLoss(y: tf.Tensor, y_hat: tf.Tensor) -> tf.Tensor:
     y_pred = tf.argmax(y_hat, axis=-1)
     y_cap = tf.one_hot(indices=y_pred, depth=tf.shape(y)[-1], dtype=tf.int32)
-    return tf.reduce_sum(tf.cast(tf.equal(y, y_cap), tf.int32))/tf.reduce_sum(tf.ones_like(y_cap))
+    return tf.reduce_sum(tf.cast(tf.not_equal(y, y_cap), tf.int32))/tf.reduce_sum(tf.ones_like(y_cap))
