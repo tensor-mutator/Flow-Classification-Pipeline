@@ -3,7 +3,7 @@ with warnings.catch_warnings():
      warnings.filterwarnings("ignore", category=FutureWarning)
      import tensorflow.compat.v1 as tf
 import numpy as np
-import tqdm
+from tqdm import tqdm
 from typing import Dict, List
 from .model import Model
 from .exceptions import *
