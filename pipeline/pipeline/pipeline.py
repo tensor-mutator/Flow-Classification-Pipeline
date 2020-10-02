@@ -25,9 +25,9 @@ class Pipeline:
       OPTIMIZERS: Dict = {"adagrad": tf.train.AdagradOptimizer, "adadelta": tf.train.AdadeltaOptimizer,
                           "rmsprop": tf.train.RMSPropOptimizer, "adam": tf.train.AdamOptimizer}
 
-      EVALUATION_METRICS: Dict = {"micro_precision": MicroPrecision, "micro_recall": MicroRecall, "micro_f1_score": MicroF1Score,
-                                  "macro_precision": MacroPrecision, "macro_recall": MacroRecall, "macro_f1_score": MacroF1Score,
-                                  "hamming_loss": HammingLoss, "tp": TP, "fp": FP, "tn": TN, "fn": FN}
+      EVALUATION_METRICS: Dict = {"MicroPrecision": MicroPrecision, "MicroRecall": MicroRecall, "MicroF1Score": MicroF1Score,
+                                  "MacroPrecision": MacroPrecision, "MacroRecall": MacroRecall, "MacroF1Score": MacroF1Score,
+                                  "HammingLoss": HammingLoss, "TP": TP, "FP": FP, "TN": TN, "FN": FN}
 
       def __init__(self, model: Model, batch_size: int, n_epoch: int, loss: str = None,
                    optimizer: str = None, lr: float = None, evaluation_metrics: List = None) -> None:
