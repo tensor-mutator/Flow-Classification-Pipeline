@@ -239,19 +239,25 @@ class Pipeline:
                                  progress.update(self._batch_size)
                         except tf.errors.OutOfRangeError:
                            ...
-                   print(f"{UP}\r{WIPE}\n{WIPE}EPOCH: {CYAN}{epoch+1}{DEFAULT}")
-                   print(f"\n\tTraining set:")
-                   print(f"\n\t\tLoss: {GREEN}{train_loss/n_batches_train}{DEFAULT}")
-                   for metric, score in zip(self._evaluation_metrics.get("TRAIN", []), train_score):
-                       print(f"\t\t{metric}: {GREEN}{score/n_batches_train}{DEFAULT}")
+                   self._print_summary(epoch+1, train_loss, zip(self._evaluation_metrics.get("TRAIN", []), train_score), n_batches_train,
+                                       test_loss, zip(self._evaluation_metrics.get("TEST", []), test_score), n_batches_test)
                    self._save_summary(train_writer, epoch=epoch+1, loss=train_loss/n_batches_train,
                                       metrics=zip(self._evaluation_metrics.get("TRAIN", []), train_score))
-                   print(f"\n\tTest set:")
-                   print(f"\n\t\tLoss: {MAGENTA}{test_loss/n_batches_test}{DEFAULT}")
-                   for metric, score in zip(self._evaluation_metrics.get("TEST", []), test_score):
-                       print(f"\t\t{metric}: {MAGENTA}{score/n_batches_test}{DEFAULT}")
                    self._save_summary(test_writer, epoch=epoch+1, loss=test_loss/n_batches_test,
                                       metrics=zip(self._evaluation_metrics.get("TEST", []), test_score))
+
+      def _print_summary(self, epoch: int, train_loss: loss, train_metric: zip,
+                        n_batches_train: int, test_loss: float, test_metric: zip
+                        n_batches_test: int) -> None:
+          print(f"{UP}\r{WIPE}\n{WIPE}EPOCH: {CYAN}{epoch}{DEFAULT}")
+          print(f"\n\tTraining set:")
+          print(f"\n\t\tLoss: {GREEN}{train_loss/n_batches_train}{DEFAULT}")
+          for metric, score in train_metric:
+              print(f"\t\t{metric}: {GREEN}{score/n_batches_train}{DEFAULT}")
+          print(f"\n\tTest set:")
+          print(f"\n\t\tLoss: {MAGENTA}{test_loss/n_batches_test}{DEFAULT}")
+          for metric, score in test_metric:
+              print(f"\t\t{metric}: {MAGENTA}{score/n_batches_test}{DEFAULT}")
 
       def fit(self, X_train: np.ndarray, X_test: np.ndarray,
               y_train: np.ndarray, y_test: np.ndarray) -> None:
