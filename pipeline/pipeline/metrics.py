@@ -18,31 +18,25 @@ def FP(y: tf.Tensor, y_hat: tf.Tensor, type: str = "Macro") -> tf.Tensor:
     y_pred = tf.argmax(y_hat, axis=-1)
     y_cap = tf.one_hot(indices=y_pred, depth=tf.shape(y_hat)[-1])
     if type == "Macro":
-       return tf.reduce_sum(tf.where(tf.cast(y_cap, tf.bool), tf.equal(y, 0),
-                                     tf.zeros_like(y_cap)), axis=0)
+       return tf.reduce_sum(tf.where(tf.cast(y_cap, tf.bool), tf.equal(y, 0), tf.zeros_like(y_cap)), axis=0)
     else:
-       return tf.reduce_sum(tf.where(tf.cast(y_cap, tf.bool), tf.equal(y, 0),
-                                     tf.zeros_like(y_cap)))
+       return tf.reduce_sum(tf.where(tf.cast(y_cap, tf.bool), tf.equal(y, 0), tf.zeros_like(y_cap)))
 
 def TN(y: tf.Tensor, y_hat: tf.Tensor, type: str = "Macro") -> tf.Tensor:
     y_pred = tf.argmax(y_hat, axis=-1)
     y_cap = tf.one_hot(indices=y_pred, depth=tf.shape(y_hat)[-1])
     if type == "Macro":
-       return tf.reduce_sum(tf.where(tf.equal(y_cap, 0), tf.equal(y, 0),
-                                     tf.zeros_like(y_cap)), axis=0)
+       return tf.reduce_sum(tf.where(tf.equal(y_cap, 0), tf.equal(y, 0), tf.zeros_like(y_cap)), axis=0)
     else:
-       return tf.reduce_sum(tf.where(tf.equal(y_cap, 0), tf.equal(y, 0),
-                                     tf.zeros_like(y_cap)))
+       return tf.reduce_sum(tf.where(tf.equal(y_cap, 0), tf.equal(y, 0), tf.zeros_like(y_cap)))
 
 def FN(y: tf.Tensor, y_hat: tf.Tensor, type: str = "Macro") -> tf.Tensor:
     y_pred = tf.argmax(y_hat, axis=-1)
     y_cap = tf.one_hot(indices=y_pred, depth=tf.shape(y_hat)[-1])
     if type == "Macro":
-       return tf.reduce_sum(tf.where(tf.equal(y_cap, 0), y,
-                                     tf.zeros_like(y_cap)), axis=0)
+       return tf.reduce_sum(tf.where(tf.equal(y_cap, 0), y, tf.zeros_like(y_cap)), axis=0)
     else:
-       return tf.reduce_sum(tf.where(tf.equal(y_cap, 0), y,
-                                     tf.zeros_like(y_cap)))
+       return tf.reduce_sum(tf.where(tf.equal(y_cap, 0), y, tf.zeros_like(y_cap)))
 
 def MicroPrecision(y: tf.Tensor, y_hat: tf.Tensor) -> tf.Tensor:
     y_pred = tf.argmax(y_hat, axis=-1)
