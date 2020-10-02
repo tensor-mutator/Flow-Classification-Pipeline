@@ -107,13 +107,13 @@ class Pipeline:
                                  #progress.update(self._batch_size)
                    except tf.errors.OutOfRangeError:
                       ...
-                   print(f"\nepoch: {CYAN}{epoch+1}{DEFAULT}")
-                   print(f"\ttraining set:")
-                   print(f"\t\tloss: {GREEN}{train_loss/len(y_train)}{DEFAULT}")
+                   print(f"\nEPOCH: {CYAN}{epoch+1}{DEFAULT}")
+                   print(f"\tTraining set:")
+                   print(f"\t\tLoss: {GREEN}{train_loss/len(y_train)}{DEFAULT}")
                    for metric, accuracy in zip(self._evaluation_metrics, train_accuracy):
                        print(f"\t\t\t{metric}: {GREEN}{accuracy/len(y_train)}{DEFAULT}")
-                   print(f"\ttest set:")
-                   print(f"\t\tloss: {MAGENTA}{test_loss/len(y_test)}{DEFAULT}")
+                   print(f"\tTest set:")
+                   print(f"\t\tLoss: {MAGENTA}{test_loss/len(y_test)}{DEFAULT}")
                    for metric, accuracy in zip(self._evaluation_metrics, test_accuracy):
                        print(f"\t\t\t{metric}: {MAGENTA}{accuracy/len(y_test)}{DEFAULT}")
 
