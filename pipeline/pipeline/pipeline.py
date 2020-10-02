@@ -7,7 +7,7 @@ import numpy as np
 import os
 from tqdm import tqdm
 from glob import glob
-from typing import Dict, List, Generator
+from typing import Dict, List, Generator, Any
 from .model import Model
 from .exceptions import *
 from .metrics import (MicroPrecision, MicroRecall, MacroPrecision, MicroF1Score, MacroRecall,
@@ -61,8 +61,12 @@ class Pipeline:
       @contextmanager
       def _fit_context(self) -> Generator:
           self._load_weights()
-          yield self._session
+          train_writer, test_writer = self._generate_summary_writer()
+          yield self._session, train_writer, test_writer
           self._save_weights()
+          if train_writer and test_writer:
+             train_writer.close()
+             test_writer.close()
 
       def _load_weights(self) -> None:
           if self._config & config.LOAD_WEIGHTS:
@@ -70,6 +74,17 @@ class Pipeline:
              if glob(os.path.join(self._checkpoint_path, "{}.ckpt.*".format(self._checkpoint_path))):
                 ckpt = tf.train.get_checkpoint_state(self._checkpoint_path)
                 self._saver.restore(self._session, ckpt.model_checkpoint_path)
+
+      def _generate_summary_writer(self) -> Any:
+          summary_cond = config.LOSS_EVENT+config.HAMMING_LOSS_EVENT+config.MACRO_PRECISION_EVENT+config.MACRO_RECALL_EVENT
+          summary_cond += config.MACRO_F1_SCORE_EVENT+config.MICRO_PRECISION_EVENT+config.MICRO_RECALL_EVENT+config.MICRO_F1_SCORE_EVENT
+          summary_cond += config.MACRO_TP_EVENT+config.MACRO_FP_EVENT+config.MACRO_TN_EVENT+config.MACRO_FN_EVENT
+          summary_cond += config.MICRO_TP_EVENT+config.MICRO_FP_EVENT+config.MICRO_TN_EVENT+config.MICRO_FN_EVENT
+          if self._config & summary_cond:
+             train_writer = tf.summary.FileWriter(os.path.join(self._checkpoint_path, "{} TRAIN EVENT".format(self._checkpoint_path)), self._session.graph)
+             test_writer = tf.summary.FileWriter(os.path.join(self._checkpoint_path, "{} TEST EVENT".format(self._checkpoint_path)), self._session.graph)
+             return train_writer, test_writer
+          return None, None
 
       def _save_weights(self) -> None:
           if self._config & config.SAVE_WEIGHTS:
@@ -126,8 +141,11 @@ class Pipeline:
           config.gpu_options.allow_growth = True
           return tf.Session(config=config)
 
+      def _save_summary(writer: tf.summary.FileWriter, epoch, loss, metrics) -> None:
+
       def _fit(self, X_train: np.ndarray, X_test: np.ndarray,
-               y_train: np.ndarray, y_test: np.ndarray, session: tf.Session) -> None:
+               y_train: np.ndarray, y_test: np.ndarray, session: tf.Session,
+               train_writer: tf.summary.FileWriter, test_writer: tf.summary.FileWriter) -> None:
           def run_(session, total_loss, total_accuracy, train=True) -> List:
               if train:
                  _, loss, accuracy_scores = session.run([self._model.grad, self._model.loss, self._model.evaluation_ops_train])
@@ -163,18 +181,22 @@ class Pipeline:
                            ...
                    print(f"{UP}\r{WIPE}\n{WIPE}EPOCH: {CYAN}{epoch+1}{DEFAULT}")
                    print(f"\n\tTraining set:")
-                   print(f"\t\tLoss: {GREEN}{train_loss/len(y_train)}{DEFAULT}")
+                   print(f"\t\tLoss: {GREEN}{train_loss/n_batches_train}{DEFAULT}")
                    for metric, accuracy in zip(self._evaluation_metrics.get("TRAIN", []), train_accuracy):
                        print(f"\t\t{metric}: {GREEN}{accuracy/n_batches_train}{DEFAULT}")
+                   self._save_summary(train_writer, epoch=epoch+1, loss=loss, metrics=zip(self._evaluation_metrics.get("TRAIN", []),
+                                                                                          train_accuracy))
                    print(f"\n\tTest set:")
-                   print(f"\t\tLoss: {MAGENTA}{test_loss/len(y_test)}{DEFAULT}")
+                   print(f"\t\tLoss: {MAGENTA}{test_loss/n_batches_test}{DEFAULT}")
                    for metric, accuracy in zip(self._evaluation_metrics.get("TEST", []), test_accuracy):
                        print(f"\t\t{metric}: {MAGENTA}{accuracy/n_batches_test}{DEFAULT}")
+                   self._save_summary(test_writer, epoch=epoch+1, loss=loss, metrics=zip(self._evaluation_metrics.get("TEST", []),
+                                                                                         test_accuracy))
 
        def fit(self, X_train: np.ndarray, X_test: np.ndarray,
                y_train: np.ndarray, y_test: np.ndarray) -> None:
-           with self._fit_context() as session:
-                _fit(X_train, X_test, y_train, y_test, session)
+           with self._fit_context() as session, train_writer, test_writer:
+                _fit(X_train, X_test, y_train, y_test, session, train_writer, test_writer)
 
       def __del__(self) -> None:
           self._session.close()
