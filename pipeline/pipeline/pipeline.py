@@ -68,21 +68,27 @@ class Pipeline:
              self._model.grad = optimizer(learning_rate=self._lr).minimize(self._model.loss)
 
       def _check_evaluation_metrics(self) -> None:
-          if not self._model.evaluation_ops:
-             metric_ops = list()
-             for metric in self._evaluation_metrics:
-                 if not Pipeline.EVALUATION_METRICS.get(metric, None):
-                    raise InvalidMetricError("Invalid evaluation metric: {}".format(metric))
-                 metric_ops.append(Pipeline.EVALUATION_METRICS[metric](self._model.y, self._model.y_hat))
-             self._model.evaluation_ops = metric_ops
+          def generate_evaluation_ops(metrics):
+              ops = list()
+              for metric in metrics:
+                  if not Pipeline.EVALUATION_METRICS.get(metric, None):
+                     raise InvalidMetricError("Invalid evaluation metric: {}".format(metric))
+                  ops.append(Pipeline.EVALUATION_METRICS[metric](self._model.y, self._model.y_hat))
+              return ops
+          if not self._model.evaluation_ops_train and not self._model_evaluation_ops_test:
+             if self._evaluation_metrics:
+                ops = generate_avaluation_ops(self._evaluation_metrics.get("TRAIN", []))
+                self._model.evaluation_ops_train = ops
+                test_ops = list(set.difference(set(self._evaluation_metrics.get("TEST", [])), set(self._evaluation_metrics.get("TRAIN", []))))
+                ops = generate_avaluation_ops(test_ops)
 
       def fit(self, X_train: np.ndarray, X_test: np.ndarray,
               y_train: np.ndarray, y_test: np.ndarray) -> None:
           def run_(session, total_loss, total_accuracy, train=True) -> List:
               if train:
-                 _, loss, accuracy_scores = session.run([self._model.grad, self._model.loss, self._model.evaluation_ops])
+                 _, loss, accuracy_scores = session.run([self._model.grad, self._model.loss, self._model.evaluation_ops_train])
               else:
-                 loss, accuracy_scores = session.run([self._model.loss, self._model.evaluation_ops])
+                 loss, accuracy_scores = session.run([self._model.loss, self._model.evaluation_ops_test])
               total_loss += loss
               total_accuracy = list(map(lambda x, y: x+y, accuracy_scores, total_accuracy))
               return total_loss, total_accuracy
@@ -94,8 +100,8 @@ class Pipeline:
           with session.graph.as_default():
                session.run(tf.global_variables_initializer())
                for epoch in range(self._n_epoch):
-                   train_loss, train_accuracy = 0, [0 for _ in range(len(self._evaluation_metrics))]
-                   test_loss, test_accuracy = 0, [0 for _ in range(len(self._evaluation_metrics))]
+                   train_loss, train_accuracy = 0, [0 for _ in range(len(self._evaluation_metrics.get("TRAIN", [])))]
+                   test_loss, test_accuracy = 0, [0 for _ in range(len(self._evaluation_metrics.get("TEST", [])))]
                    session.run(self._iterator.initializer, feed_dict={self._X_placeholder: X_train,
                                                                       self._y_placeholder: y_train})
                    #with tqdm(total=len(y_train)) as progress:
@@ -117,11 +123,11 @@ class Pipeline:
                    print(f"\nEPOCH: {CYAN}{epoch+1}{DEFAULT}")
                    print(f"\tTraining set:")
                    print(f"\t\tLoss: {GREEN}{train_loss/len(y_train)}{DEFAULT}")
-                   for metric, accuracy in zip(self._evaluation_metrics, train_accuracy):
+                   for metric, accuracy in zip(self._evaluation_metrics.get("TRAIN", []), train_accuracy):
                        print(f"\t\t{metric}: {GREEN}{accuracy/n_batches_train}{DEFAULT}")
                    print(f"\tTest set:")
                    print(f"\t\tLoss: {MAGENTA}{test_loss/len(y_test)}{DEFAULT}")
-                   for metric, accuracy in zip(self._evaluation_metrics, test_accuracy):
+                   for metric, accuracy in zip(self._evaluation_metrics.get("TEST", []), test_accuracy):
                        print(f"\t\t{metric}: {MAGENTA}{accuracy/n_batches_test}{DEFAULT}")
 
       def __del__(self) -> None:
