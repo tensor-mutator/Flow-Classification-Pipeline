@@ -51,7 +51,7 @@ class GunnerFarnebackRewardModel(Model):
       @property
       def evaluation_ops_train(self) -> List[tf.Tensor]:
           return self._evaluation_ops_train
- 
+
       @evaluation_ops_train.setter
       def evaluation_ops_train(self, evaluation_ops: List[tf.Tensor]) -> None:
           self._evaluation_ops_train = evaluation_ops
@@ -59,7 +59,7 @@ class GunnerFarnebackRewardModel(Model):
       @property
       def evaluation_ops_test(self) -> List[tf.Tensor]:
           return self._evaluation_ops_test
- 
+
       @evaluation_ops_test.setter
       def evaluation_ops_test(self, evaluation_ops: List[tf.Tensor]) -> None:
           self._evaluation_ops_test = evaluation_ops
