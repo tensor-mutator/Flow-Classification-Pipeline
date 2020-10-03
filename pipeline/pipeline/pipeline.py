@@ -242,9 +242,9 @@ class Pipeline:
                    self._print_summary(epoch+1, train_loss, zip(self._evaluation_metrics.get("TRAIN", []), train_score), n_batches_train,
                                        test_loss, zip(self._evaluation_metrics.get("TEST", []), test_score), n_batches_test)
                    self._save_summary(train_writer, epoch=epoch+1, loss=train_loss,
-                                      metrics=zip(self._evaluation_metrics.get("TRAIN", []), train_score), n_batches_train)
+                                      metrics=zip(self._evaluation_metrics.get("TRAIN", []), train_score), n_batches=n_batches_train)
                    self._save_summary(test_writer, epoch=epoch+1, loss=test_loss,
-                                      metrics=zip(self._evaluation_metrics.get("TEST", []), test_score), n_batches_test)
+                                      metrics=zip(self._evaluation_metrics.get("TEST", []), test_score), n_batches=n_batches_test)
 
       def _print_summary(self, epoch: int, train_loss: float, train_metric: zip,
                          n_batches_train: int, test_loss: float, test_metric: zip,
