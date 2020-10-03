@@ -165,41 +165,41 @@ class Pipeline:
           config.gpu_options.allow_growth = True
           return config
 
-      def _save_summary(self, writer: tf.summary.FileWriter, epoch: int, loss: float, metrics: zip) -> None:
+      def _save_summary(self, writer: tf.summary.FileWriter, epoch: int, loss: float, metrics: zip, n_batches: int) -> None:
           summary = tf.Summary()
           if self._config & config.LOSS_EVENT:
-             summary.value.add(tag="{} Performance/Epoch - Loss".format(self._model_name), simple_value=loss)
+             summary.value.add(tag="{} Performance/Epoch - Loss".format(self._model_name), simple_value=loss/n_batches)
           for metric, score in metrics:
               if metric == "HammingLoss" and self._config & config.HAMMING_LOSS_EVENT:
-                 summary.value.add(tag="{} Performance/Epoch - HammingLoss".format(self._model_name), simple_value=score)
+                 summary.value.add(tag="{} Performance/Epoch - HammingLoss".format(self._model_name), simple_value=score/n_batches)
               if metric == "MicroPrecision" and self._config & config.MICRO_PRECISION_EVENT:
-                 summary.value.add(tag="{} Performance/Epoch - MicroPrecision".format(self._model_name), simple_value=score)
+                 summary.value.add(tag="{} Performance/Epoch - MicroPrecision".format(self._model_name), simple_value=score/n_batches)
               if metric == "MicroRecall" and self._config & config.MICRO_RECALL_EVENT:
-                 summary.value.add(tag="{} Performance/Epoch - MicroRecall".format(self._model_name), simple_value=score)
+                 summary.value.add(tag="{} Performance/Epoch - MicroRecall".format(self._model_name), simple_value=score/n_batches)
               if metric == "MicroF1Score" and self._config & config.MICRO_F1_SCORE_EVENT:
-                 summary.value.add(tag="{} Performance/Epoch - MicroF1Score".format(self._model_name), simple_value=score)
+                 summary.value.add(tag="{} Performance/Epoch - MicroF1Score".format(self._model_name), simple_value=score/n_batches)
               if metric == "MacroPrecision" and self._config & config.MACRO_PRECISION_EVENT:
-                 summary.value.add(tag="{} Performance/Epoch - MacroPrecision".format(self._model_name), simple_value=score)
+                 summary.value.add(tag="{} Performance/Epoch - MacroPrecision".format(self._model_name), simple_value=score/n_batches)
               if metric == "MacroRecall" and self._config & config.MACRO_RECALL_EVENT:
-                 summary.value.add(tag="{} Performance/Epoch - MicroRecall".format(self._model_name), simple_value=score)
+                 summary.value.add(tag="{} Performance/Epoch - MicroRecall".format(self._model_name), simple_value=score/n_batches)
               if metric == "MacroF1Score" and self._config & config.MACRO_F1_SCORE_EVENT:
-                 summary.value.add(tag="{} Performance/Epoch - MacroF1Score".format(self._model_name), simple_value=score)
+                 summary.value.add(tag="{} Performance/Epoch - MacroF1Score".format(self._model_name), simple_value=score/n_batches)
               if metric == "MacroTP" and self._config & config.MACRO_TP_EVENT:
-                 summary.value.add(tag="{} Performance/Epoch - MacroTP".format(self._model_name), simple_value=score)
+                 summary.value.add(tag="{} Performance/Epoch - MacroTP".format(self._model_name), simple_value=score/n_batches)
               if metric == "MacroFP" and self._config & config.MACRO_FP_EVENT:
-                 summary.value.add(tag="{} Performance/Epoch - MacroFP".format(self._model_name), simple_value=score)
+                 summary.value.add(tag="{} Performance/Epoch - MacroFP".format(self._model_name), simple_value=score/n_batches)
               if metric == "MacroTN" and self._config & config.MACRO_TN_EVENT:
-                 summary.value.add(tag="{} Performance/Epoch - MacroTN".format(self._model_name), simple_value=score)
+                 summary.value.add(tag="{} Performance/Epoch - MacroTN".format(self._model_name), simple_value=score/n_batches)
               if metric == "MacroFN" and self._config & config.MACRO_FN_EVENT:
-                 summary.value.add(tag="{} Performance/Epoch - MacroFN".format(self._model_name), simple_value=score)
+                 summary.value.add(tag="{} Performance/Epoch - MacroFN".format(self._model_name), simple_value=score/n_batches)
               if metric == "MicroTP" and self._config & config.MICRO_TP_EVENT:
-                 summary.value.add(tag="{} Performance/Epoch - MicroTP".format(self._model_name), simple_value=score)
+                 summary.value.add(tag="{} Performance/Epoch - MicroTP".format(self._model_name), simple_value=score/n_batches)
               if metric == "MicroFP" and self._config & config.MICRO_FP_EVENT:
-                 summary.value.add(tag="{} Performance/Epoch - MicroFP".format(self._model_name), simple_value=score)
+                 summary.value.add(tag="{} Performance/Epoch - MicroFP".format(self._model_name), simple_value=score/n_batches)
               if metric == "MicroTN" and self._config & config.MICRO_TN_EVENT:
-                 summary.value.add(tag="{} Performance/Epoch - MicroTN".format(self._model_name), simple_value=score)
+                 summary.value.add(tag="{} Performance/Epoch - MicroTN".format(self._model_name), simple_value=score/n_batches)
               if metric == "MicroFN" and self._config & config.MICRO_FN_EVENT:
-                 summary.value.add(tag="{} Performance/Epoch - MicroFN".format(self._model_name), simple_value=score)
+                 summary.value.add(tag="{} Performance/Epoch - MicroFN".format(self._model_name), simple_value=score/n_batches)
           if writer:
              writer.add_summary(summary, epoch)
 
@@ -241,10 +241,10 @@ class Pipeline:
                            ...
                    self._print_summary(epoch+1, train_loss, zip(self._evaluation_metrics.get("TRAIN", []), train_score), n_batches_train,
                                        test_loss, zip(self._evaluation_metrics.get("TEST", []), test_score), n_batches_test)
-                   self._save_summary(train_writer, epoch=epoch+1, loss=train_loss/n_batches_train,
-                                      metrics=zip(self._evaluation_metrics.get("TRAIN", []), train_score))
-                   self._save_summary(test_writer, epoch=epoch+1, loss=test_loss/n_batches_test,
-                                      metrics=zip(self._evaluation_metrics.get("TEST", []), test_score))
+                   self._save_summary(train_writer, epoch=epoch+1, loss=train_loss,
+                                      metrics=zip(self._evaluation_metrics.get("TRAIN", []), train_score), n_batches_train)
+                   self._save_summary(test_writer, epoch=epoch+1, loss=test_loss,
+                                      metrics=zip(self._evaluation_metrics.get("TEST", []), test_score), n_batches_test)
 
       def _print_summary(self, epoch: int, train_loss: float, train_metric: zip,
                          n_batches_train: int, test_loss: float, test_metric: zip,
