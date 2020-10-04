@@ -130,7 +130,7 @@ class Pipeline:
 
       def _generate_target_graph(self, model: Model) -> List:
           with tf.variable_scope("target"):
-               self._X_predict = tf.placeholder(shape=[None] + list(model.shape_X()) + [3], dtype=tf.float32)
+               self._X_predict = tf.placeholder(shape=[None] + list(model.shape_X()) + [3], dtype=tf.float32, name="X")
                model = model(self._X_predict, None)
           return model
 
