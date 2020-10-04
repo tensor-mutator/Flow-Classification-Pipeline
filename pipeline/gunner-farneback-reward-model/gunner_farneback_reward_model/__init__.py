@@ -37,7 +37,7 @@ class GunnerFarnebackRewardModel(Model):
           dense_3 = layers.Dense(units=512, kernel_initializer=tf.initializers.glorot_normal(), 
                                  activation=tf.nn.leaky_relu)(dense_2)
           y_logits = layers.Dense(units=3)(dense_3)
-          self._y_hat = layers.Activation(tf.nn.softmax)(y_logits)
+          self._y_hat = layers.Activation(tf.nn.softmax, name="y_hat")(y_logits)
           if self._y is None:
              return
           self._loss = tf.losses.softmax_cross_entropy(logits=y_logits, onehot_labels=self._y)
