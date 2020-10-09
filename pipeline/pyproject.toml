@@ -6,7 +6,7 @@ authors = ["Debajyoti Raychaudhuri <draychaudhuri1086@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "3.6.8"
-tensorflow-gpu = "1.15.3"
+tensorflow-gpu = "2.2.0"
 opencv-python = "^4.4.0.44"
 gunner-farneback-reward-model = { path = "gunner-farneback-reward-model/" }
 flappy-bird-dataset = { path = "flappy-bird-dataset/" }
