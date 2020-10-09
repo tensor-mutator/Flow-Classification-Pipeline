@@ -1,5 +1,12 @@
 __version__ = '0.1.0'
 
+import warnings
+with warnings.catch_warnings():  
+     warnings.filterwarnings("ignore", category=FutureWarning)
+     import tensorflow.compat.v1 as tf
+tf.logging.set_verbosity(tf.logging.WARN)
+tf.logging.set_verbosity(tf.logging.ERROR)
+tf.disable_eager_execution()
 from .model import Model
 from .pipeline import Pipeline
 from .metrics import (MicroPrecision, MicroRecall, MicroF1Score, MacroPrecision, MacroRecall, MacroF1Score, 
