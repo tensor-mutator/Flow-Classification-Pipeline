@@ -1,11 +1,6 @@
 from abc import ABCMeta, abstractmethod
 from typing import Any, Tuple, List
-import warnings
-with warnings.catch_warnings():  
-     warnings.filterwarnings("ignore", category=FutureWarning)
-     import tensorflow.compat.v1 as tf
-tf.logging.set_verbosity(tf.logging.WARN)
-tf.logging.set_verbosity(tf.logging.ERROR)
+import tensorflow.compat.v1 as tf
 
 class Model(metaclass=ABCMeta):
 
