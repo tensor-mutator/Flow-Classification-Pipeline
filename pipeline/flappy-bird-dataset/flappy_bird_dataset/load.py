@@ -13,7 +13,7 @@ from sklearn.model_selection import train_test_split
 
 path = os.path.split(__file__)[0]
 data_path = os.path.join(path, "data")
-meta_file = os.path.join(path, "rewards.meta")
+meta_file = os.path.join(path, "flow.meta")
 
 def _one_hot_y(y: np.ndarray) -> np.ndarray:
     one_hot = np.zeros(shape=[np.size(y), 3], dtype=np.float32)
