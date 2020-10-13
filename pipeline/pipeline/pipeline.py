@@ -57,7 +57,7 @@ class Pipeline:
           self._model_name = model.__name__
           self._generate_checkpoint_directory()
 
-      def _generate_local_graph(self, model: Model) -> List:
+      def _generate_local_graph(self, model: Model) -> Model:
           with tf.variable_scope("local"):
                model = self._get_model(model)
                self._check_loss(model)
@@ -128,7 +128,7 @@ class Pipeline:
           X_, y_ = self._iterator.get_next()
           return model(X_, y_)
 
-      def _generate_target_graph(self, model: Model) -> List:
+      def _generate_target_graph(self, model: Model) -> Model:
           with tf.variable_scope("target"):
                self._X_predict = tf.placeholder(shape=[None] + list(model.shape_X()) + [3], dtype=tf.float32, name="X")
                model = model(self._X_predict, None)
