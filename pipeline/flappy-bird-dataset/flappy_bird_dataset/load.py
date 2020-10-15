@@ -20,7 +20,7 @@ def _one_hot_y(y: np.ndarray) -> np.ndarray:
     one_hot[np.arange(np.size(y)), y] = 1
     return one_hot
 
-def _map_rewards(reward) -> int:
+def _map_rewards(reward: int) -> int:
     if reward == 0:
        return 0
     elif reward == 1:
@@ -28,12 +28,12 @@ def _map_rewards(reward) -> int:
     else:
        return 2
 
-def _get_y(data) -> np.ndarray:
+def _get_y(data: List) -> np.ndarray:
     y_rewards = map(lambda x: x["reward"], data)
     y_labels = np.array(list(map(_map_rewards, y_rewards)))
     return _one_hot_y(y_labels)
 
-def _get_X(data, resolution: Tuple, flow: bool = False) -> np.ndarray:
+def _get_X(data: List, resolution: Tuple[int, int], flow: bool = False) -> np.ndarray:
     if flow:
        X_flow_path = map(lambda x: x["flow"], data)
        X = np.zeros(shape=[0] + list(resolution) + [3], dtype=np.float32)
@@ -54,7 +54,7 @@ def _get_X(data, resolution: Tuple, flow: bool = False) -> np.ndarray:
            X = np.concatenate([X, np.expand_dims(img_scaled, axis=0)])
     return X
 
-def _filter_data(data, datapoints_per_class) -> List:
+def _filter_data(data: List, datapoints_per_class: int) -> List:
     no_reward_data = list(filter(lambda x: x["reward"]==0, data))
     success_data = list(filter(lambda x: x["reward"]==1, data))
     hit_data = list(filter(lambda x: x["reward"]==-5, data))
@@ -70,7 +70,7 @@ def _filter_data(data, datapoints_per_class) -> List:
         data.extend([no_reward_data[no_reward_idx], success_data[success_idx], hit_data[hit_idx]])
     return data
 
-def load(resolution: Tuple, datapoints_per_class: int, train_size: float = 0.8, test_size: float = 0.2) -> List:
+def load(resolution: Tuple[int, int], datapoints_per_class: int, train_size: float = 0.8, test_size: float = 0.2) -> List:
     with open(meta_file, "r") as f_obj:
          data = json.load(f_obj)
     data = _filter_data(data, datapoints_per_class)
@@ -78,7 +78,7 @@ def load(resolution: Tuple, datapoints_per_class: int, train_size: float = 0.8, 
     X = _get_X(data, resolution)
     return train_test_split(X, y, train_size=train_size, test_size=test_size)
 
-def load_flow(resolution: Tuple, datapoints_per_class: int, train_size: float = 0.8, test_size: float = 0.2) -> List:
+def load_flow(resolution: Tuple[int, int], datapoints_per_class: int, train_size: float = 0.8, test_size: float = 0.2) -> List:
     with open(meta_file, "r") as f_obj:
          data = json.load(f_obj)
     data = _filter_data(data, datapoints_per_class)
