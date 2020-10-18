@@ -19,7 +19,7 @@ class GunnerFarnebackRewardModel(Model):
 
       @staticmethod
       def shape_y() -> Tuple:
-          return ()
+          return (3,)
 
       def _build_graph(self) -> None:
           conv_0 = layers.Conv2D(filters=64, kernel_size=(3, 3), activation=tf.nn.leaky_relu)(self._X)
