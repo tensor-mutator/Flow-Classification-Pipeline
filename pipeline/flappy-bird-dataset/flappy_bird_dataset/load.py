@@ -33,13 +33,27 @@ def _get_y(data: List) -> np.ndarray:
     y_labels = np.array(list(map(_map_rewards, y_rewards)))
     return _one_hot_y(y_labels)
 
+def _read_flow(filename):
+    f = open(filename, 'rb')
+    magic = np.fromfile(f, np.float32, count=1)
+    data2d = None
+    if 202021.25 != magic:
+       print("Magic number incorrect. Invalid .FLO file")
+    else:
+       w = np.fromfile(f, np.int32, count=1)
+       h = np.fromfile(f, np.int32, count=1)
+       data2d = np.fromfile(f, np.float32, count=2 * w[0] * h[0])
+       data2d = np.resize(data2d, (h[0], w[0], 2))
+    f.close()
+    return data2d
+
 def _get_X(data: List, resolution: Tuple[int, int], flow: bool = False) -> np.ndarray:
     if flow:
        X_flow_path = map(lambda x: x["flow"], data)
-       X = np.zeros(shape=[0] + list(resolution) + [3], dtype=np.float32)
+       X = np.zeros(shape=[0] + list(resolution) + [2], dtype=np.float32)
        for path in X_flow_path:
-           img = cv2.imread(os.path.join(data_path, path))
-           img_scaled = cv2.resize(img.astype(np.float32), resolution)
+           flow = cv2.imread(os.path.join(data_path, path))
+           flow_scaled = np.resize(_read_flow(os.path.join(data_path, path)), resolution + (2,))
            X = np.concatenate([X, np.expand_dims(img_scaled, axis=0)])
     else:
        X_src_img_path = map(lambda x: x["src_image"], data)
