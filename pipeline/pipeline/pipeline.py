@@ -49,7 +49,7 @@ class Pipeline:
           self._evaluation_metrics = evaluation_metrics
           self._config = config
           self._X_placeholder = tf.placeholder(shape=[None] + list(model.shape_X()) + [2], dtype=tf.float32)
-          self._y_placeholder = tf.placeholder(shape=[None] + list(model.shape_y()) + [3], dtype=tf.int32)
+          self._y_placeholder = tf.placeholder(shape=[None] + list(model.shape_y()), dtype=tf.int32)
           self._iterator = self._generate_iterator()
           self._model = self._generate_local_graph(model)
           self._predict_model = self._generate_target_graph(model)
