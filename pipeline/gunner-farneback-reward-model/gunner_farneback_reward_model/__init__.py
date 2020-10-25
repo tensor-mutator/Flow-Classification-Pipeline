@@ -46,19 +46,20 @@ class GunnerFarnebackRewardModel(Model):
       def Decoder(embedding_dim: int, units: int) -> Callable:
           attn = GunnerFarnebackRewardModel.BahdanauAttention(units)
           lstm = tf.keras.layers.LSTM(units, return_sequences=True, return_state=True, recurrent_initializer='glorot_uniform')
-          def _op(x: tf.Tensor, features: tf.Tensor, hidden: tf.Tensor) -> List:
+          def _op(x: tf.Tensor, features: tf.Tensor, hidden: tf.Tensor, cell: tf.Tensor) -> List:
               context_vector, attention_weights = attn(features, hidden)
-              x = tf.concat([tf.expand_dims(context_vector, axis=1), x], axis=-1)
-              return lstm(x)
+              x = tf.concat([context_vector, x], axis=-1)
+              return lstm(tf.expand_dims(x, axis=1), initial_state=[hidden, cell])
           return _op
 
       @staticmethod
       def Attention(blocks: int, units: int, embedding_dim: int, batch_size: int) -> Callable:
-          decoder = GunnerFarnebackModel.Decoder(embedding_dim, units)
-          hidden_state = tf.zeros((batch_size, units))
+          decoder = GunnerFarnebackRewardModel.Decoder(embedding_dim, units)
           def _op(features: tf.Tensor) -> tf.Tensor:
+              hidden_state = tf.zeros((batch_size, units))
+              cell_state = tf.zeros((batch_size, units))
               for _ in range(blocks):
-                  _, hidden_state = decoder(hidden_state, features, hidden_state)
+                  _, hidden_state, cell_state = decoder(hidden_state, features, hidden_state, cell_state)
               return hidden_state
           return _op
 
@@ -68,10 +69,8 @@ class GunnerFarnebackRewardModel(Model):
           conv_1_1 = layers.Conv2D(filters=128, kernel_size=(3, 3), activation=tf.nn.leaky_relu)(conv_1)
           conv_2 = layers.Conv2D(filters=128, kernel_size=(3, 3), strides=(2, 2), activation=tf.nn.leaky_relu)(conv_1_1)
           conv_2_1 = layers.Conv2D(filters=128, kernel_size=(3, 3), activation=tf.nn.leaky_relu)(conv_2)
-          feature_map_size = tf.shape(conv_2_1)[1]
-          conv_squeezed = tf.reshape(conv_2_1, [-1, feature_map_size*feature_map_size, 128])
-          conv_features = tf.unstack(conv_squeezed, axis=1)
-          attn = GunnerFarnebackRewardModel.Attention(4, 256, 256, tf.shape(self._X)[0])
+          conv_squeezed = tf.reshape(conv_2_1, [-1, -1, 128])
+          attn = GunnerFarnebackRewardModel.Attention(4, 256, 256, tf.shape(self._X)[0])(conv_squeezed)
           #dense_1 = layers.Dense(units=1024, kernel_initializer=tf.initializers.glorot_normal(),
           #                       activation=tf.nn.leaky_relu)(layers.Flatten()(conv_2_1))
           #dense_2 = layers.Dense(units=512, kernel_initializer=tf.initializers.glorot_normal(),
