@@ -43,7 +43,7 @@ class GunnerFarnebackRewardModel(Model):
           return _op
 
       @staticmethod
-      def Decoder(embedding_dim: int, units: int) -> Callable:
+      def Decoder(units: int) -> Callable:
           attn = GunnerFarnebackRewardModel.BahdanauAttention(units)
           lstm = tf.keras.layers.LSTM(units, return_sequences=True, return_state=True, recurrent_initializer='glorot_uniform')
           def _op(x: tf.Tensor, features: tf.Tensor, hidden: tf.Tensor, cell: tf.Tensor) -> List:
@@ -54,8 +54,10 @@ class GunnerFarnebackRewardModel(Model):
 
       @staticmethod
       def Attention(blocks: int, units: int, embedding_dim: int, batch_size: int) -> Callable:
-          decoder = GunnerFarnebackRewardModel.Decoder(embedding_dim, units)
-          def _op(features: tf.Tensor) -> tf.Tensor:
+          decoder = GunnerFarnebackRewardModel.Decoder(units)
+          encoder = GunnerFarnebackRewardModel.Encoder(embedding_dim)
+          def _op(conv_out: tf.Tensor) -> tf.Tensor:
+              features = encoder(conv_out)
               hidden_state = tf.zeros((batch_size, units))
               cell_state = tf.zeros((batch_size, units))
               for _ in range(blocks):
