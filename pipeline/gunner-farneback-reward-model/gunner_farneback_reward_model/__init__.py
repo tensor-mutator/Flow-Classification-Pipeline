@@ -74,12 +74,6 @@ class GunnerFarnebackRewardModel(Model):
           feature_map_size = tf.shape(conv_2_1)[1]
           conv_squeezed = tf.reshape(conv_2_1, [-1, feature_map_size*feature_map_size, 128])
           attn = GunnerFarnebackRewardModel.Attention(4, 256, 256, tf.shape(self._X)[0])(conv_squeezed)
-          #dense_1 = layers.Dense(units=1024, kernel_initializer=tf.initializers.glorot_normal(),
-          #                       activation=tf.nn.leaky_relu)(layers.Flatten()(conv_2_1))
-          #dense_2 = layers.Dense(units=512, kernel_initializer=tf.initializers.glorot_normal(),
-          #                       activation=tf.nn.leaky_relu)(dense_1)
-          #dense_3 = layers.Dense(units=512, kernel_initializer=tf.initializers.glorot_normal(), 
-          #                       activation=tf.nn.leaky_relu)(dense_2)
           y_logits = layers.Dense(units=3)(attn)
           self._y_hat = layers.Activation(tf.nn.softmax, name="y_hat")(y_logits)
           if self._y is None:
