@@ -69,7 +69,8 @@ class GunnerFarnebackRewardModel(Model):
           conv_1_1 = layers.Conv2D(filters=128, kernel_size=(3, 3), activation=tf.nn.leaky_relu)(conv_1)
           conv_2 = layers.Conv2D(filters=128, kernel_size=(3, 3), strides=(2, 2), activation=tf.nn.leaky_relu)(conv_1_1)
           conv_2_1 = layers.Conv2D(filters=128, kernel_size=(3, 3), activation=tf.nn.leaky_relu)(conv_2)
-          conv_squeezed = tf.reshape(conv_2_1, [-1, -1, 128])
+          feature_map_size = tf.shape(conv_2_1)[1]
+          conv_squeezed = tf.reshape(conv_2_1, [-1, feature_map_size*feature_map_size, 128])
           attn = GunnerFarnebackRewardModel.Attention(4, 256, 256, tf.shape(self._X)[0])(conv_squeezed)
           #dense_1 = layers.Dense(units=1024, kernel_initializer=tf.initializers.glorot_normal(),
           #                       activation=tf.nn.leaky_relu)(layers.Flatten()(conv_2_1))
