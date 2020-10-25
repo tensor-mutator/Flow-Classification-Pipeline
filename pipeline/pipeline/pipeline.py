@@ -181,7 +181,7 @@ class Pipeline:
               if metric == "MacroPrecision" and self._config & config.MACRO_PRECISION_EVENT:
                  summary.value.add(tag="{} Performance/Epoch - MacroPrecision".format(self._model_name), simple_value=score/n_batches)
               if metric == "MacroRecall" and self._config & config.MACRO_RECALL_EVENT:
-                 summary.value.add(tag="{} Performance/Epoch - MicroRecall".format(self._model_name), simple_value=score/n_batches)
+                 summary.value.add(tag="{} Performance/Epoch - MacroRecall".format(self._model_name), simple_value=score/n_batches)
               if metric == "MacroF1Score" and self._config & config.MACRO_F1_SCORE_EVENT:
                  summary.value.add(tag="{} Performance/Epoch - MacroF1Score".format(self._model_name), simple_value=score/n_batches)
               if metric == "MacroTP" and self._config & config.MACRO_TP_EVENT:
