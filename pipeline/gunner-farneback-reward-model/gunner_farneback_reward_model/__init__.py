@@ -1,6 +1,6 @@
 import tensorflow.compat.v1 as tf
 import tensorflow.compat.v1.keras.layers as layers
-from typing import Tuple, List
+from typing import Tuple, List, Callable
 from pipeline import Pipeline, Model, config
 import flappy_bird_dataset
 
@@ -21,19 +21,64 @@ class GunnerFarnebackRewardModel(Model):
       def shape_y() -> Tuple:
           return (3,)
 
+      @staticmethod
+      def BahdanauAttention(units: int) -> Callable:
+          W1 = layers.Dense(units=units)
+          W2 = layers.Dense(units=units)
+          V = layers.Dense(1)
+          def _op(features: tf.Tensor, hidden: tf.Tensor) -> List:
+              hidden_with_time = tf.expand_dims(hidden, axis=1)
+              attention_hidden = tf.nn.tanh(W1(features) + W2(hidden_with_time))
+              score = V(attention_hidden)
+              attention_weights = tf.nn.softmax(score, axis=1)
+              context_vector = tf.reduce_sum(attention_weights*features, axis=1)
+              return context_vector, attention_weights
+          return _op
+
+      @staticmethod
+      def Encoder(embedding_dim: int) -> Callable:
+          def _op(tensor: tf.Tensor) -> tf.Tensor:
+              embedding_out = layers.Dense(units=embedding_dim)(tensor)
+              return tf.nn.relu(embedding_out)
+          return _op
+
+      @staticmethod
+      def Decoder(embedding_dim: int, units: int) -> Callable:
+          attn = GunnerFarnebackRewardModel.BahdanauAttention(units)
+          lstm = tf.keras.layers.LSTM(units, return_sequences=True, return_state=True, recurrent_initializer='glorot_uniform')
+          def _op(x: tf.Tensor, features: tf.Tensor, hidden: tf.Tensor) -> List:
+              context_vector, attention_weights = attn(features, hidden)
+              x = tf.concat([tf.expand_dims(context_vector, axis=1), x], axis=-1)
+              return lstm(x)
+          return _op
+
+      @staticmethod
+      def Attention(blocks: int, units: int, embedding_dim: int, batch_size: int) -> Callable:
+          decoder = GunnerFarnebackModel.Decoder(embedding_dim, units)
+          hidden_state = tf.zeros((batch_size, units))
+          def _op(features: tf.Tensor) -> tf.Tensor:
+              for _ in range(blocks):
+                  _, hidden_state = decoder(hidden_state, features, hidden_state)
+              return hidden_state
+          return _op
+
       def _build_graph(self) -> None:
           conv_0 = layers.Conv2D(filters=64, kernel_size=(3, 3), activation=tf.nn.leaky_relu)(self._X)
           conv_1 = layers.Conv2D(filters=64, kernel_size=(3, 3), strides=(2, 2), activation=tf.nn.leaky_relu)(conv_0)
           conv_1_1 = layers.Conv2D(filters=128, kernel_size=(3, 3), activation=tf.nn.leaky_relu)(conv_1)
           conv_2 = layers.Conv2D(filters=128, kernel_size=(3, 3), strides=(2, 2), activation=tf.nn.leaky_relu)(conv_1_1)
           conv_2_1 = layers.Conv2D(filters=128, kernel_size=(3, 3), activation=tf.nn.leaky_relu)(conv_2)
-          dense_1 = layers.Dense(units=1024, kernel_initializer=tf.initializers.glorot_normal(),
-                                 activation=tf.nn.leaky_relu)(layers.Flatten()(conv_2_1))
-          dense_2 = layers.Dense(units=512, kernel_initializer=tf.initializers.glorot_normal(),
-                                 activation=tf.nn.leaky_relu)(dense_1)
-          dense_3 = layers.Dense(units=512, kernel_initializer=tf.initializers.glorot_normal(), 
-                                 activation=tf.nn.leaky_relu)(dense_2)
-          y_logits = layers.Dense(units=3)(dense_3)
+          feature_map_size = tf.shape(conv_2_1)[0]
+          conv_squeezed = tf.reshape(conv_2_1, [None, feature_map_size*feature_map_size, 128])
+          conv_features = tf.unstack(conv_squeezed, axis=1)
+          attn = GunnerFarnebackRewardModel.Attention(4, 256, 256, tf.shape(self._X)[0])
+          #dense_1 = layers.Dense(units=1024, kernel_initializer=tf.initializers.glorot_normal(),
+          #                       activation=tf.nn.leaky_relu)(layers.Flatten()(conv_2_1))
+          #dense_2 = layers.Dense(units=512, kernel_initializer=tf.initializers.glorot_normal(),
+          #                       activation=tf.nn.leaky_relu)(dense_1)
+          #dense_3 = layers.Dense(units=512, kernel_initializer=tf.initializers.glorot_normal(), 
+          #                       activation=tf.nn.leaky_relu)(dense_2)
+          y_logits = layers.Dense(units=3)(attn)
           self._y_hat = layers.Activation(tf.nn.softmax, name="y_hat")(y_logits)
           if self._y is None:
              return
