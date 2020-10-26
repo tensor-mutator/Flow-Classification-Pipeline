@@ -52,7 +52,7 @@ def _get_X(data: List, resolution: Tuple[int, int], flow: bool = False) -> np.nd
        X_flow_path = map(lambda x: x["flow"], data)
        X = np.zeros(shape=[0] + list(resolution) + [2], dtype=np.float32)
        for path in X_flow_path:
-           flow_scaled = np.resize(_read_flow(os.path.join(data_path, path)), resolution + (2,))
+           flow_scaled = cv2.resize(_read_flow(os.path.join(data_path, path)), resolution)
            X = np.concatenate([X, np.expand_dims(flow_scaled, axis=0)])
     else:
        X_src_img_path = map(lambda x: x["src_image"], data)
