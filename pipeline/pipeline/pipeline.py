@@ -8,7 +8,7 @@ import os
 from tqdm import tqdm
 from glob import glob
 from typing import Dict, List, Generator, Any
-import skimage
+import skimage.transform
 import cv2
 from .model import Model
 from .exceptions import *
@@ -175,7 +175,7 @@ class Pipeline:
           for idx, (flow, attn_weight) in enumerate(zip(flows, attention_weights)):
               flow_img = Flow.flow_to_image(flow)
               flow_img = cv2.resize(flow_img, self._model.shape_X())
-              size = attn_weight.shape[1]
+              size = np.sqrt(attn_weight.shape[0])
               attn_heat = skimage.transform.pyramid_expand(np.reshape(np.squeeze(attn_weight), (size, size)), upscale = 16, sigma=20)
               attn_heat = cv2.resize(attn_heat, self._model.shape_X())
               path = os.path.join(self._model_name, "Attention Heatmaps", self._global_batch_clock+idx)
