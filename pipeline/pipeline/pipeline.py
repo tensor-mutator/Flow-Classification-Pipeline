@@ -172,16 +172,18 @@ class Pipeline:
           return config
 
       def _save_heatmap(self, flows, attention_weights) -> None:
+          path = os.path.join(self._model_name, "Attention Heatmaps", "EPOCH {}".format(str(self._epoch).zfill(10)))
           for idx, (flow, attn_weight) in enumerate(zip(flows, attention_weights)):
               flow_img = Flow.flow_to_image(flow)
               flow_img = cv2.resize(flow_img, self._model.shape_X())
               size = np.sqrt(attn_weight.shape[0]).astype(np.int32)
               attn_heat = skimage.transform.pyramid_expand(np.reshape(np.squeeze(attn_weight), (size, size)), upscale = 16, sigma=20)
               attn_heat = cv2.resize(attn_heat, self._model.shape_X())
-              path = os.path.join(self._model_name, "Attention Heatmaps", self._global_batch_clock+idx)
-              os.mkdir(path)
-              cv2.imwrite(os.path.join(path, "flow.png"), flow_img)
-              cv2.imwrite(os.path.join(path, "heatmap.png"), attn_heat)
+              heat_path = os.path.join(path, str(self._test_batch*self._batch_size+idx).zfill(10))
+              if not os.path.exists(heat_path):
+                 os.makedirs(heat_path)
+              cv2.imwrite(os.path.join(heat_path, "flow.png"), flow_img)
+              cv2.imwrite(os.path.join(heat_path, "heatmap.png"), attn_heat)
 
       def _save_summary(self, writer: tf.summary.FileWriter, epoch: int, loss: float, metrics: zip, n_batches: int) -> None:
           summary = tf.Summary()
@@ -241,8 +243,9 @@ class Pipeline:
           n_batches_test = np.ceil(np.size(y_test, axis=0)/self._batch_size)
           with session.graph.as_default():
                session.run(tf.global_variables_initializer())
-               self._global_batch_clock = 0
+               self._epoch = 0
                for epoch in range(self._n_epoch):
+                   self._test_batch = 0
                    train_loss, train_score = 0, [0 for _ in range(len(self._evaluation_metrics.get("TRAIN", [])))]
                    test_loss, test_score = 0, [0 for _ in range(len(self._evaluation_metrics.get("TEST", [])))]
                    session.run(self._iterator.initializer, feed_dict={self._X_placeholder: X_train,
@@ -261,7 +264,7 @@ class Pipeline:
                            while True:
                                  test_loss, test_score = run_(session, test_loss, test_score, train=False)
                                  progress.update(self._batch_size)
-                                 self._global_batch_clock += 1
+                                 self._test_batch += 1
                         except tf.errors.OutOfRangeError:
                            ...
                    self._print_summary(epoch+1, train_loss, zip(self._evaluation_metrics.get("TRAIN", []), train_score), n_batches_train,
@@ -270,6 +273,7 @@ class Pipeline:
                                       metrics=zip(self._evaluation_metrics.get("TRAIN", []), train_score), n_batches=n_batches_train)
                    self._save_summary(test_writer, epoch=epoch+1, loss=test_loss,
                                       metrics=zip(self._evaluation_metrics.get("TEST", []), test_score), n_batches=n_batches_test)
+                   self._epoch += 1
 
       def _print_summary(self, epoch: int, train_loss: float, train_metric: zip,
                          n_batches_train: int, test_loss: float, test_metric: zip,
