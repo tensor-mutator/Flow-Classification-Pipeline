@@ -33,6 +33,10 @@ class Model(metaclass=ABCMeta):
           return self._y
 
       @property
+      def X(self) -> tf.Tensor:
+          return self._X
+
+      @property
       @abstractmethod
       def evaluation_ops_train(self) -> List[tf.Tensor]:
           ...
