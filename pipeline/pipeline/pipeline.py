@@ -9,6 +9,7 @@ from tqdm import tqdm
 from glob import glob
 from typing import Dict, List, Generator, Any
 import skimage
+import cv2
 from .model import Model
 from .exceptions import *
 from .metrics import (MicroPrecision, MicroRecall, MacroPrecision, MicroF1Score, MacroRecall,
