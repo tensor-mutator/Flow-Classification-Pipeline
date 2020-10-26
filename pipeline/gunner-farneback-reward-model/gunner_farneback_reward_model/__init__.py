@@ -21,8 +21,7 @@ class GunnerFarnebackRewardModel(Model):
       def shape_y() -> Tuple:
           return (3,)
 
-      @staticmethod
-      def BahdanauAttention(units: int) -> Callable:
+      def BahdanauAttention(self, units: int) -> Callable:
           W1 = layers.Dense(units=units)
           W2 = layers.Dense(units=units)
           V = layers.Dense(1)
@@ -30,21 +29,19 @@ class GunnerFarnebackRewardModel(Model):
               hidden_with_time = tf.expand_dims(hidden, axis=1)
               attention_hidden = tf.nn.tanh(W1(features) + W2(hidden_with_time))
               score = V(attention_hidden)
-              GunnerFarnebackRewardModel._attention_weights = tf.nn.softmax(score, axis=1, name="attention_weights")
-              context_vector = tf.reduce_sum(GunnerFarnebackRewardModel._attention_weights*features, axis=1)
-              return context_vector, GunnerFarnebackRewardModel._attention_weights
+              self._attention_weights = tf.nn.softmax(score, axis=1, name="attention_weights")
+              context_vector = tf.reduce_sum(self._attention_weights*features, axis=1)
+              return context_vector, self._attention_weights
           return _op
 
-      @staticmethod
-      def Encoder(embedding_dim: int) -> Callable:
+      def Encoder(self, embedding_dim: int) -> Callable:
           def _op(tensor: tf.Tensor) -> tf.Tensor:
               embedding_out = layers.Dense(units=embedding_dim)(tensor)
               return tf.nn.relu(embedding_out)
           return _op
 
-      @staticmethod
-      def Decoder(units: int) -> Callable:
-          attn = GunnerFarnebackRewardModel.BahdanauAttention(units)
+      def Decoder(self, units: int) -> Callable:
+          attn = self.BahdanauAttention(units)
           lstm_cell = layers.LSTMCell(units, recurrent_initializer="glorot_uniform")
           lstm = layers.RNN(lstm_cell, return_sequences=True, return_state=True, name="LSTM")
           def _op(x: tf.Tensor, features: tf.Tensor, hidden: tf.Tensor, cell: tf.Tensor) -> List:
@@ -53,10 +50,9 @@ class GunnerFarnebackRewardModel(Model):
               return lstm(tf.expand_dims(x, axis=1), initial_state=[hidden, cell])
           return _op
 
-      @staticmethod
-      def Attention(blocks: int, units: int, embedding_dim: int, batch_size: int) -> Callable:
-          decoder = GunnerFarnebackRewardModel.Decoder(units)
-          encoder = GunnerFarnebackRewardModel.Encoder(embedding_dim)
+      def Attention(self, blocks: int, units: int, embedding_dim: int, batch_size: int) -> Callable:
+          decoder = self.Decoder(units)
+          encoder = self.Encoder(embedding_dim)
           def _op(conv_out: tf.Tensor) -> tf.Tensor:
               features = encoder(conv_out)
               hidden_state = tf.zeros((batch_size, units))
@@ -74,7 +70,7 @@ class GunnerFarnebackRewardModel(Model):
           conv_2_1 = layers.Conv2D(filters=128, kernel_size=(3, 3), activation=tf.nn.leaky_relu)(conv_2)
           feature_map_size = tf.shape(conv_2_1)[1]
           conv_squeezed = tf.reshape(conv_2_1, [-1, feature_map_size*feature_map_size, 128])
-          attn = GunnerFarnebackRewardModel.Attention(4, 256, 256, tf.shape(self._X)[0])(conv_squeezed)
+          attn = self.Attention(4, 256, 256, tf.shape(self._X)[0])(conv_squeezed)
           y_logits = layers.Dense(units=3)(attn)
           self._y_hat = layers.Activation(tf.nn.softmax, name="y_hat")(y_logits)
           if self._y is None:
@@ -105,7 +101,7 @@ class GunnerFarnebackRewardModel(Model):
 
       @property
       def attention_weights(self) -> tf.Tensor:
-          return GunnerFarnebackRewardModel._attention_weights
+          return self._attention_weights
 
 def main():
     pipeline = Pipeline(GunnerFarnebackRewardModel, batch_size=32, n_epoch=1000,
