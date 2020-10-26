@@ -30,9 +30,9 @@ class GunnerFarnebackRewardModel(Model):
               hidden_with_time = tf.expand_dims(hidden, axis=1)
               attention_hidden = tf.nn.tanh(W1(features) + W2(hidden_with_time))
               score = V(attention_hidden)
-              self._attention_weights = tf.nn.softmax(score, axis=1, name="attention_weights")
-              context_vector = tf.reduce_sum(self._attention_weights*features, axis=1)
-              return context_vector, self._attention_weights
+              GunnerFarnebackRewardModel._attention_weights = tf.nn.softmax(score, axis=1, name="attention_weights")
+              context_vector = tf.reduce_sum(GunnerFarnebackRewardModel._attention_weights*features, axis=1)
+              return context_vector, GunnerFarnebackRewardModel._attention_weights
           return _op
 
       @staticmethod
@@ -105,7 +105,7 @@ class GunnerFarnebackRewardModel(Model):
 
       @property
       def attention_weights(self) -> tf.Tensor:
-          return self._attention_weights
+          return GunnerFarnebackRewardModel._attention_weights
 
 def main():
     pipeline = Pipeline(GunnerFarnebackRewardModel, batch_size=32, n_epoch=1000,
