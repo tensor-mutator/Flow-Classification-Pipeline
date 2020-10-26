@@ -15,6 +15,7 @@ from .metrics import (MicroPrecision, MicroRecall, MicroF1Score, MacroPrecision,
                       HammingLoss, TP, FP, TN, FN)
 from .losses import bp_mll
 from .config import config
+from .flow import Flow
 
 __all__ = ["Model", "Pipeline", "MicroPrecision", "MicroRecall", "MicroF1Score", "MacroPrecision",
            "MacroRecall", "MacroF1Score", "HammingLoss", "TP", "FP", "TN", "FN", "bp_mll", "config"]
