@@ -174,10 +174,10 @@ class Pipeline:
       def _save_heatmap(self, flows, attention_weights) -> None:
           for idx, (flow, attn_weight) in enumerate(zip(flows, attention_weights)):
               flow_img = Flow.flow_to_image(flow)
-              flow_img = cv2.resize(flow_img, self._model.shape_x())
+              flow_img = cv2.resize(flow_img, self._model.shape_X())
               size = attn_weight.shape[1]
               attn_heat = skimage.transform.pyramid_expand(np.reshape(np.squeeze(attn_weight), (size, size)), upscale = 16, sigma=20)
-              attn_heat = cv2.resize(attn_heat, self._model.shape_x())
+              attn_heat = cv2.resize(attn_heat, self._model.shape_X())
               path = os.path.join(self._model_name, "Attention Heatmaps", self._global_batch_clock+idx)
               os.mkdir(path)
               cv2.imwrite(os.path.join(path, "flow.png"), flow_img)
