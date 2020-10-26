@@ -8,7 +8,6 @@ import os
 from tqdm import tqdm
 from glob import glob
 from typing import Dict, List, Generator, Any
-import skimage.transform
 import cv2
 from .model import Model
 from .exceptions import *
@@ -177,8 +176,7 @@ class Pipeline:
               flow_img = Flow.flow_to_image(flow)
               flow_img = cv2.resize(flow_img, self._model.shape_X())
               size = np.sqrt(attn_weight.shape[0]).astype(np.int32)
-              attn_heat = skimage.transform.pyramid_expand(np.reshape(np.squeeze(attn_weight), (size, size)), upscale = 16, sigma=20)
-              attn_heat = cv2.resize(attn_heat, self._model.shape_X())
+              attn_heat = cv2.resize(255*np.reshape(np.squeeze(attn_weight), (size, size)), self._model.shape_X())
               heat_path = os.path.join(path, str(self._test_batch*self._batch_size+idx).zfill(10))
               if not os.path.exists(heat_path):
                  os.makedirs(heat_path)
