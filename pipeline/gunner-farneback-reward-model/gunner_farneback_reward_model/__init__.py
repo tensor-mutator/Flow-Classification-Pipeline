@@ -30,9 +30,9 @@ class GunnerFarnebackRewardModel(Model):
               hidden_with_time = tf.expand_dims(hidden, axis=1)
               attention_hidden = tf.nn.tanh(W1(features) + W2(hidden_with_time))
               score = V(attention_hidden)
-              attention_weights = tf.nn.softmax(score, axis=1)
-              context_vector = tf.reduce_sum(attention_weights*features, axis=1)
-              return context_vector, attention_weights
+              self._attention_weights = tf.nn.softmax(score, axis=1, name="attention_weights")
+              context_vector = tf.reduce_sum(self._attention_weights*features, axis=1)
+              return context_vector, self._attention_weights
           return _op
 
       @staticmethod
@@ -103,10 +103,15 @@ class GunnerFarnebackRewardModel(Model):
       def evaluation_ops_test(self, evaluation_ops: List[tf.Tensor]) -> None:
           self._evaluation_ops_test = evaluation_ops
 
+      @property
+      def attention_weights(self) -> tf.Tensor:
+          return self._attention_weights
+
 def main():
     pipeline = Pipeline(GunnerFarnebackRewardModel, batch_size=32, n_epoch=1000,
                         config=config.SAVE_WEIGHTS+config.LOAD_WEIGHTS+config.LOSS_EVENT+config.HAMMING_LOSS_EVENT,
                         evaluation_metrics=dict(TRAIN=["MacroPrecision", "MacroRecall", "MacroF1Score", "HammingLoss"],
-                                                TEST=["MacroPrecision", "MacroRecall", "MacroF1Score", "HammingLoss"]))
+                                                TEST=["MacroPrecision", "MacroRecall", "MacroF1Score", "HammingLoss"]),
+                        save_attention_heatmap=True)
     X_train, X_test, y_train, y_test = flappy_bird_dataset.load_flow(resolution=(64, 64), datapoints_per_class=2500)
     pipeline.fit(X_train, X_test, y_train, y_test)
