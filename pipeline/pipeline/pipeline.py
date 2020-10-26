@@ -8,12 +8,14 @@ import os
 from tqdm import tqdm
 from glob import glob
 from typing import Dict, List, Generator, Any
+import skimage
 from .model import Model
 from .exceptions import *
 from .metrics import (MicroPrecision, MicroRecall, MacroPrecision, MicroF1Score, MacroRecall,
                       MacroF1Score, HammingLoss, TP, FP, TN, FN)
 from .losses import bp_mll
 from .config import config
+from .flow import Flow
 
 GREEN = "\033[32m"
 MAGENTA = "\033[35m"
@@ -40,7 +42,7 @@ class Pipeline:
 
       def __init__(self, model: Model, batch_size: int, n_epoch: int, loss: str = None,
                    optimizer: str = None, lr: float = None, evaluation_metrics: List = None,
-                   config: bin = config.DEFAULT) -> None:
+                   config: bin = config.DEFAULT, save_attention_heatmap=False) -> None:
           self._batch_size = batch_size
           self._n_epoch = n_epoch
           self._loss = loss
@@ -48,6 +50,7 @@ class Pipeline:
           self._lr = lr if lr else 1e-4
           self._evaluation_metrics = evaluation_metrics
           self._config = config
+          self._attention_heatmap = save_attention_heatmap
           self._X_placeholder = tf.placeholder(shape=[None] + list(model.shape_X()) + [2], dtype=tf.float32)
           self._y_placeholder = tf.placeholder(shape=[None] + list(model.shape_y()), dtype=tf.int32)
           self._iterator = self._generate_iterator()
@@ -118,6 +121,8 @@ class Pipeline:
           if self._config & checkpoint_directory_cond:
              if not os.path.exists(self._model_name):
                 os.mkdir(self._model_name)
+          if self._attention_heatmap:
+             os.mkdir(os.path.join(self._model_name, "Attention Heatmaps"))
 
       def _generate_iterator(self) -> tf.data.Iterator:
           dataset = tf.data.Dataset.from_tensor_slices((self._X_placeholder, self._y_placeholder))
@@ -165,6 +170,18 @@ class Pipeline:
           config.gpu_options.allow_growth = True
           return config
 
+      def _save_heatmap(self, flows, attention_weights) -> None:
+          for idx, (flow, attn_weight) in enumerate(zip(flows, attention_weights)):
+              flow_img = Flow.flow_to_image(flow)
+              flow_img = cv2.resize(flow_img, self._model.shape_x())
+              size = attn_weight.shape[1]
+              attn_heat = skimage.transform.pyramid_expand(np.reshape(np.squeeze(attn_weight), (size, size)), upscale = 16, sigma=20)
+              attn_heat = cv2.resize(attn_heat, self._model.shape_x())
+              path = os.path.join(self._model_name, "Attention Heatmaps", self._global_batch_clock+idx)
+              os.mkdir(path)
+              cv2.imwrite(os.path.join(path, "flow.png"), flow_img)
+              cv2.imwrite(os.path.join(path, "heatmap.png"), attn_heat)
+
       def _save_summary(self, writer: tf.summary.FileWriter, epoch: int, loss: float, metrics: zip, n_batches: int) -> None:
           summary = tf.Summary()
           if self._config & config.LOSS_EVENT:
@@ -210,7 +227,12 @@ class Pipeline:
               if train:
                  _, loss, accuracy_scores = session.run([self._model.grad, self._model.loss, self._model.evaluation_ops_train])
               else:
-                 loss, accuracy_scores = session.run([self._model.loss, self._model.evaluation_ops_test])
+                 if self._attention_heatmap:
+                    loss, accuracy_scores, attn_weights, flows = session.run([self._model.loss, self._model.evaluation_ops_test,
+                                                                              self._model.attention_weights, self._model.X])
+                    self._save_heatmap(flows, attn_weights)
+                 else:
+                    loss, accuracy_scores = session.run([self._model.loss, self._model.evaluation_ops_test])
               total_loss += loss
               total_accuracy = list(map(lambda x, y: x+y, accuracy_scores, total_accuracy))
               return total_loss, total_accuracy
@@ -218,6 +240,7 @@ class Pipeline:
           n_batches_test = np.ceil(np.size(y_test, axis=0)/self._batch_size)
           with session.graph.as_default():
                session.run(tf.global_variables_initializer())
+               self._global_batch_clock = 0
                for epoch in range(self._n_epoch):
                    train_loss, train_score = 0, [0 for _ in range(len(self._evaluation_metrics.get("TRAIN", [])))]
                    test_loss, test_score = 0, [0 for _ in range(len(self._evaluation_metrics.get("TEST", [])))]
@@ -237,6 +260,7 @@ class Pipeline:
                            while True:
                                  test_loss, test_score = run_(session, test_loss, test_score, train=False)
                                  progress.update(self._batch_size)
+                                 self._global_batch_clock += 1
                         except tf.errors.OutOfRangeError:
                            ...
                    self._print_summary(epoch+1, train_loss, zip(self._evaluation_metrics.get("TRAIN", []), train_score), n_batches_train,
