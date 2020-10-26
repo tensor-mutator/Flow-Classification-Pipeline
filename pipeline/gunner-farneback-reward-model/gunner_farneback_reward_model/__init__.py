@@ -46,7 +46,7 @@ class GunnerFarnebackRewardModel(Model):
       def Decoder(units: int) -> Callable:
           attn = GunnerFarnebackRewardModel.BahdanauAttention(units)
           lstm_cell = layers.LSTMCell(units, recurrent_initializer="glorot_uniform")
-          lstm = layers.RNN(lstm, return_sequences=True, return_state=True, name="LSTM")
+          lstm = layers.RNN(lstm_cell, return_sequences=True, return_state=True, name="LSTM")
           def _op(x: tf.Tensor, features: tf.Tensor, hidden: tf.Tensor, cell: tf.Tensor) -> List:
               context_vector, attention_weights = attn(features, hidden)
               x = tf.concat([context_vector, x], axis=-1)
