@@ -45,7 +45,8 @@ class GunnerFarnebackRewardModel(Model):
       @staticmethod
       def Decoder(units: int) -> Callable:
           attn = GunnerFarnebackRewardModel.BahdanauAttention(units)
-          lstm = tf.keras.layers.LSTM(units, return_sequences=True, return_state=True, recurrent_initializer='glorot_uniform')
+          lstm_cell = layers.LSTMCell(units, recurrent_initializer="glorot_uniform")
+          lstm = layers.RNN(lstm, return_sequences=True, return_state=True, name="LSTM")
           def _op(x: tf.Tensor, features: tf.Tensor, hidden: tf.Tensor, cell: tf.Tensor) -> List:
               context_vector, attention_weights = attn(features, hidden)
               x = tf.concat([context_vector, x], axis=-1)
