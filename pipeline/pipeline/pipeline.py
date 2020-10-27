@@ -137,7 +137,8 @@ class Pipeline:
       def _generate_target_graph(self, model: Model) -> Model:
           with tf.variable_scope("target"):
                self._X_predict = tf.placeholder(shape=[None] + list(model.shape_X()) + [2], dtype=tf.float32, name="X")
-               model = model(self._X_predict, None)
+               y = tf.placeholder(shape=[None] + list(model.shape_y()), dtype=tf.int32, name="y")
+               model = model(self._X_predict, y)
           return model
 
       def _check_loss(self, model: Model) -> None:
