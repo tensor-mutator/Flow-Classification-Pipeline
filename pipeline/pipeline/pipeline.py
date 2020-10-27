@@ -122,7 +122,8 @@ class Pipeline:
              if not os.path.exists(self._model_name):
                 os.mkdir(self._model_name)
           if self._attention_heatmap:
-             os.mkdir(os.path.join(self._model_name, "Attention Heatmaps"))
+             if not os.path.exists(os.path.join(self._model_name, "Attention Heatmaps")):
+                    os.mkdir(os.path.join(self._model_name, "Attention Heatmaps"))
 
       def _generate_iterator(self) -> tf.data.Iterator:
           dataset = tf.data.Dataset.from_tensor_slices((self._X_placeholder, self._y_placeholder))
