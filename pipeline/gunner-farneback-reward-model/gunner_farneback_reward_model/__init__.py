@@ -81,7 +81,7 @@ class GunnerFarnebackRewardModel(Model):
           for idx, (grad, var) in enumerate(gradients):
               if grad is not None:
                  gradients[idx] = (tf.clip_by_norm(grad, 10), var)
-          self._grad = optimizer.apply_gradients(gradients)
+          self._grad = optimizer.apply_gradients(gradients, name="train")
 
       @property
       def evaluation_ops_train(self) -> List[tf.Tensor]:
