@@ -77,7 +77,8 @@ class GunnerFarnebackRewardModel(Model):
              return
           self._loss = tf.losses.softmax_cross_entropy(logits=y_logits, onehot_labels=self._y)
           optimizer = tf.train.AdamOptimizer(learning_rate=1e-4)
-          gradients = optimizer.compute_gradients(self._loss, var_list=tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, "local"))
+          gradients = optimizer.compute_gradients(self._loss, var_list=tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES,
+                                                                                         tf.get_default_graph().get_name_scope()))
           for idx, (grad, var) in enumerate(gradients):
               if grad is not None:
                  gradients[idx] = (tf.clip_by_norm(grad, 10), var)
