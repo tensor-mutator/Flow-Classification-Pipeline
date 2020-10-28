@@ -31,7 +31,7 @@ class GunnerFarnebackRewardModel(Model):
               score = V(attention_hidden)
               self._attention_weights = tf.nn.softmax(score, axis=1, name="attention_weights")
               context_vector = tf.reduce_sum(self._attention_weights*features, axis=1)
-              return context_vector, self._attention_weights
+              return context_vector
           return _op
 
       def Encoder(self, embedding_dim: int) -> Callable:
@@ -45,7 +45,7 @@ class GunnerFarnebackRewardModel(Model):
           lstm_cell = layers.LSTMCell(units, recurrent_initializer="glorot_uniform")
           lstm = layers.RNN(lstm_cell, return_sequences=True, return_state=True, name="LSTM")
           def _op(x: tf.Tensor, features: tf.Tensor, hidden: tf.Tensor, cell: tf.Tensor) -> List:
-              context_vector, attention_weights = attn(features, hidden)
+              context_vector = attn(features, hidden)
               x = tf.concat([context_vector, x], axis=-1)
               return lstm(tf.expand_dims(x, axis=1), initial_state=[hidden, cell])
           return _op
