@@ -1,4 +1,4 @@
-# Flow-Classification-Pipeline
+# Flow Classification Pipeline
 A pipeline for training a flow classification neural network model
 
 #### Installation steps
