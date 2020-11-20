@@ -8,7 +8,7 @@ authors = ["Debajyoti Raychaudhuri <draychaudhuri1086@gmail.com>"]
 python = "3.6.8"
 tensorflow-gpu = "2.2.0"
 opencv-python = "^4.4.0.44"
-gunner-farneback-reward-model = { path = "gunner-farneback-reward-model/" }
+gunner-farneback-reward-model = { path = "gunnar-farneback-reward-model/" }
 flappy-bird-dataset = { path = "flappy-bird-dataset/" }
 tqdm = "^4.50.0"
 scikit-image = "^0.17.2"
