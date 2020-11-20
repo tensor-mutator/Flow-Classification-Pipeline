@@ -4,7 +4,7 @@ from typing import Tuple, List, Callable
 from pipeline import Pipeline, Model, config
 import flappy_bird_dataset
 
-class GunnerFarnebackRewardModel(Model):
+class GunnarFarnebackRewardModel(Model):
 
       def __init__(self, X: tf.Tensor, y: tf.Tensor = None) -> None:
           self._X = X
@@ -105,7 +105,7 @@ class GunnerFarnebackRewardModel(Model):
           return self._attention_weights
 
 def main():
-    pipeline = Pipeline(GunnerFarnebackRewardModel, batch_size=32, n_epoch=1000,
+    pipeline = Pipeline(GunnarFarnebackRewardModel, batch_size=32, n_epoch=1000,
                         config=config.SAVE_WEIGHTS+config.LOAD_WEIGHTS+config.LOSS_EVENT+config.HAMMING_LOSS_EVENT,
                         evaluation_metrics=dict(TRAIN=["MacroPrecision", "MacroRecall", "MacroF1Score", "HammingLoss"],
                                                 TEST=["MacroPrecision", "MacroRecall", "MacroF1Score", "HammingLoss"]),
