@@ -1,6 +1,9 @@
 # Flow Classification Pipeline
 A pipeline for training a flow classification neural network model
 
+#### Path to <i>FlappyBird</i> dataset
+pipeline/flappy-bird-dataset/flappy_bird_dataset
+
 #### Installation steps
 ```bash
 (pipeline) poetry install
